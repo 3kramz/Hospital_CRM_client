@@ -5,8 +5,10 @@ import Login from "../Pages/Login/Login";
 
 import PrivateRoute from "./PrivateRoute";
 import Dashboard from "../Pages/Dashboard/Dashboard";
-import PatientEntry from "../Pages/Dashboard/Privateuser/PatientEntry";
+
 import ForgetPassword from "../Pages/ForgetPassword/ForgetPassword";
+import PatientEntry from "../Pages/Dashboard/Privateuser/PatientEntry/PatientEntry";
+import AssignTest from "../Pages/Dashboard/Privateuser/AssignTest/AssignTest";
 
 
 export const router = createBrowserRouter([
@@ -29,6 +31,10 @@ export const router = createBrowserRouter([
           {
             path: "patient-entry",
             element: <PatientEntry />,
+          },
+           {
+            path: "assign-test",
+            element: <AssignTest />,
           },
         ],
       },

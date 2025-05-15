@@ -1,0 +1,1137 @@
+{
+  "radiology": {
+    "ultrasound": [
+      {
+        "test_id": "USG001",
+        "name": "USG OF KUB REGION",
+        "price": 1200,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "GE Voluson E10",
+        "department_code": "RAD-USG"
+      },
+      {
+        "test_id": "USG002",
+        "name": "ULTRASOUND OF LEFT BREAST",
+        "price": 1500,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Philips EPIQ 7",
+        "department_code": "RAD-USG"
+      },
+      {
+        "test_id": "USG003",
+        "name": "ULTRASOUND OF BOTH BREAST",
+        "price": 2500,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Siemens Acuson S3000",
+        "department_code": "RAD-USG"
+      },
+      {
+        "test_id": "USG004",
+        "name": "ULTRASOUND SCROTUM (TESTES)",
+        "price": 1300,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "GE Logiq E9",
+        "department_code": "RAD-USG"
+      },
+      {
+        "test_id": "USG005",
+        "name": "ULTRASOUND OF SUPERFICIAL STRUCTURE",
+        "price": 1100,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Toshiba Aplio 500",
+        "department_code": "RAD-USG"
+      },
+      {
+        "test_id": "USG006",
+        "name": "ULTRASOUND LOWER ABDOMEN",
+        "price": 1400,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Philips Affiniti 70",
+        "department_code": "RAD-USG"
+      },
+      {
+        "test_id": "USG007",
+        "name": "ULTRASOUND WHOLE ABDOMEN",
+        "price": 1800,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "GE Voluson E10",
+        "department_code": "RAD-USG"
+      },
+      {
+        "test_id": "USG008",
+        "name": "ULTRASOUND PREGNANCY PROFILE",
+        "price": 1600,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Siemens Acuson S3000",
+        "department_code": "RAD-USG"
+      },
+      {
+        "test_id": "USG009",
+        "name": "ULTRASOUND OF THYROID GLAND",
+        "price": 1200,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Philips EPIQ 7",
+        "department_code": "RAD-USG"
+      },
+      {
+        "test_id": "USG010",
+        "name": "ULTRASOUND OF RIGHT BREAST",
+        "price": 1500,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "GE Logiq E9",
+        "department_code": "RAD-USG"
+      },
+      {
+        "test_id": "USG011",
+        "name": "ULTRASOUND UPPER ABDOMEN",
+        "price": 1400,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Toshiba Aplio 500",
+        "department_code": "RAD-USG"
+      },
+      {
+        "test_id": "USG012",
+        "name": "ULTRASOUND HBS",
+        "price": 1300,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Philips Affiniti 70",
+        "department_code": "RAD-USG"
+      },
+      {
+        "test_id": "USG013",
+        "name": "ULTRASOUND OF HRS NECK VESSELE",
+        "price": 1700,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "GE Voluson E10",
+        "department_code": "RAD-USG"
+      },
+      {
+        "test_id": "USG014",
+        "name": "ULTRASOUND OF LOWER LIMB",
+        "price": 1500,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Siemens Acuson S3000",
+        "department_code": "RAD-USG"
+      },
+      {
+        "test_id": "USG015",
+        "name": "ULTRASOUND OF UPPER LIMB",
+        "price": 1500,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Philips EPIQ 7",
+        "department_code": "RAD-USG"
+      }
+    ],
+    "ct_scan": [
+      {
+        "test_id": "CT001",
+        "name": "CT SCAN OF CHEST",
+        "price": 3200,
+        "sample_type": "none",
+        "turnaround_time": "24 hours",
+        "machine": "Siemens Somatom Drive",
+        "department_code": "RAD-CT"
+      },
+      {
+        "test_id": "CT002",
+        "name": "CT SCAN OF PNS",
+        "price": 2800,
+        "sample_type": "none",
+        "turnaround_time": "24 hours",
+        "machine": "GE Revolution EVO",
+        "department_code": "RAD-CT"
+      },
+      {
+        "test_id": "CT003",
+        "name": "CT SCAN OF BRAIN",
+        "price": 3500,
+        "sample_type": "none",
+        "turnaround_time": "24 hours",
+        "machine": "Canon Aquilion One",
+        "department_code": "RAD-CT"
+      },
+      {
+        "test_id": "CT004",
+        "name": "CT SCAN OF HBS WITH CONTRAST",
+        "price": 4500,
+        "sample_type": "none",
+        "turnaround_time": "24 hours",
+        "machine": "Siemens Somatom Force",
+        "department_code": "RAD-CT"
+      },
+      {
+        "test_id": "CT005",
+        "name": "CT SCAN OF WHOLE ABDOMEN WITH CONTRAST (ORAL+IV)",
+        "price": 5000,
+        "sample_type": "none",
+        "turnaround_time": "24 hours",
+        "machine": "GE Revolution CT",
+        "department_code": "RAD-CT"
+      },
+      {
+        "test_id": "CT006",
+        "name": "CT SCAN HRCT OF CHEST",
+        "price": 3800,
+        "sample_type": "none",
+        "turnaround_time": "24 hours",
+        "machine": "Canon Aquilion Precision",
+        "department_code": "RAD-CT"
+      },
+      {
+        "test_id": "CT007",
+        "name": "CT SCAN ORBIT",
+        "price": 3000,
+        "sample_type": "none",
+        "turnaround_time": "24 hours",
+        "machine": "Siemens Somatom Drive",
+        "department_code": "RAD-CT"
+      },
+      {
+        "test_id": "CT008",
+        "name": "CT SCAN OF NECK",
+        "price": 3200,
+        "sample_type": "none",
+        "turnaround_time": "24 hours",
+        "machine": "GE Revolution EVO",
+        "department_code": "RAD-CT"
+      },
+      {
+        "test_id": "CT009",
+        "name": "CT SCAN OF C/S OR D/L OR L/S SPINE",
+        "price": 4000,
+        "sample_type": "none",
+        "turnaround_time": "24 hours",
+        "machine": "Canon Aquilion One",
+        "department_code": "RAD-CT"
+      },
+      {
+        "test_id": "CT010",
+        "name": "CT SCAN OF KUB WITH CONTRAST",
+        "price": 4200,
+        "sample_type": "none",
+        "turnaround_time": "24 hours",
+        "machine": "Siemens Somatom Force",
+        "department_code": "RAD-CT"
+      },
+      {
+        "test_id": "CT011",
+        "name": "CT SCAN OF UPPER ABDOMEN WITH CONTRAST (ORAL+IV)",
+        "price": 4500,
+        "sample_type": "none",
+        "turnaround_time": "24 hours",
+        "machine": "GE Revolution CT",
+        "department_code": "RAD-CT"
+      },
+      {
+        "test_id": "CT012",
+        "name": "CT SCAN OF PELVIS/JOINT",
+        "price": 3800,
+        "sample_type": "none",
+        "turnaround_time": "24 hours",
+        "machine": "Canon Aquilion Precision",
+        "department_code": "RAD-CT"
+      },
+      {
+        "test_id": "CT013",
+        "name": "CT SCAN OF LOWER ABDOMEN WITH CONTRAST",
+        "price": 4200,
+        "sample_type": "none",
+        "turnaround_time": "24 hours",
+        "machine": "Siemens Somatom Drive",
+        "department_code": "RAD-CT"
+      }
+    ],
+    "xray": [
+      {
+        "test_id": "XRAY001",
+        "name": "X-RAY OPG",
+        "price": 800,
+        "sample_type": "none",
+        "turnaround_time": "2 hours",
+        "machine": "Carestream DRX-Evolution",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY002",
+        "name": "PLAIN X-RAY",
+        "price": 500,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Siemens Mobilett Mira Max",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY003",
+        "name": "X-RAY NASOPHARYNX (LAT VIEW)",
+        "price": 600,
+        "sample_type": "none",
+        "turnaround_time": "2 hours",
+        "machine": "GE Definium 8000",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY004",
+        "name": "X-RAY PNS (OM VIEW)",
+        "price": 650,
+        "sample_type": "none",
+        "turnaround_time": "2 hours",
+        "machine": "Philips DigitalDiagnost",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY005",
+        "name": "X-RAY TM JOINT B/V",
+        "price": 750,
+        "sample_type": "none",
+        "turnaround_time": "2 hours",
+        "machine": "Carestream DRX-Evolution",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY006",
+        "name": "UPPER EXTREMITY",
+        "price": 550,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Siemens Mobilett Mira Max",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY007",
+        "name": "X-RAY NASAL BONE L/V",
+        "price": 600,
+        "sample_type": "none",
+        "turnaround_time": "2 hours",
+        "machine": "GE Definium 8000",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY008",
+        "name": "X-RAY MANDIBLE L/V",
+        "price": 700,
+        "sample_type": "none",
+        "turnaround_time": "2 hours",
+        "machine": "Philips DigitalDiagnost",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY009",
+        "name": "X-RAY MASTOID TOWNE'SVIEW",
+        "price": 750,
+        "sample_type": "none",
+        "turnaround_time": "2 hours",
+        "machine": "Carestream DRX-Evolution",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY010",
+        "name": "X-RAY SOFT TISSUE NECK (L/V)",
+        "price": 650,
+        "sample_type": "none",
+        "turnaround_time": "2 hours",
+        "machine": "Siemens Mobilett Mira Max",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY011",
+        "name": "X-RAY NECK B/V",
+        "price": 700,
+        "sample_type": "none",
+        "turnaround_time": "2 hours",
+        "machine": "GE Definium 8000",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY012",
+        "name": "X-RAY NECK A/P VIEW",
+        "price": 700,
+        "sample_type": "none",
+        "turnaround_time": "2 hours",
+        "machine": "Philips DigitalDiagnost",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY013",
+        "name": "X-RAY CHEST POSTERO-ANTERIOR VIEW",
+        "price": 600,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Carestream DRX-Evolution",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY014",
+        "name": "X-RAY CHEST LATERAL VIEW (LEFT)",
+        "price": 650,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Siemens Mobilett Mira Max",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY015",
+        "name": "X-RAY CHEST LATERAL VIEW (RIGHT)",
+        "price": 650,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "GE Definium 8000",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY016",
+        "name": "X-RAY CHEST LEFT LATERAL DECUBITUS VIEW",
+        "price": 700,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Philips DigitalDiagnost",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY017",
+        "name": "X-RAY CHEST ANTERO-POSTERIOR VIEW",
+        "price": 600,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Carestream DRX-Evolution",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY018",
+        "name": "X-RAY CHEST RIGHT LATERAL DECUBITUS VIEW",
+        "price": 700,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Siemens Mobilett Mira Max",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY019",
+        "name": "X-RAY RIGHT ANKLE JOINT B/V",
+        "price": 650,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "GE Definium 8000",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY020",
+        "name": "X-RAY LEFT ANKLE JOINT B/V",
+        "price": 650,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Philips DigitalDiagnost",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY021",
+        "name": "X-RAY RIGHT LEG B/V",
+        "price": 700,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Carestream DRX-Evolution",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY022",
+        "name": "X-RAY LEFT LEG B/V",
+        "price": 700,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Siemens Mobilett Mira Max",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY023",
+        "name": "X-RAY LEFT HEEL B/V",
+        "price": 600,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "GE Definium 8000",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY024",
+        "name": "X-RAY RIGHT HEEL B/V",
+        "price": 600,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Philips DigitalDiagnost",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY025",
+        "name": "X-RAY LEFT FOOT B/V",
+        "price": 650,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Carestream DRX-Evolution",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY026",
+        "name": "X-RAY RIGHT FOOT B/V",
+        "price": 650,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Siemens Mobilett Mira Max",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY027",
+        "name": "X-RAY BOTH ANKLE JOINT B/V",
+        "price": 800,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "GE Definium 8000",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY028",
+        "name": "X-RAY LEFT HIP JOINT B/V",
+        "price": 750,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Philips DigitalDiagnost",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY029",
+        "name": "X-RAY BOTH KNEE JOINT B/V",
+        "price": 850,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Carestream DRX-Evolution",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY030",
+        "name": "X-RAY RIGHT HIP JOINT B/V",
+        "price": 750,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Siemens Mobilett Mira Max",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY031",
+        "name": "X-RAY LEFT THIGH B/V",
+        "price": 700,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "GE Definium 8000",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY032",
+        "name": "X-RAY LEFT KNEE JOINT B/V",
+        "price": 700,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Philips DigitalDiagnost",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY033",
+        "name": "X-RAY RIGHT KNEE JOINT B/V",
+        "price": 700,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Carestream DRX-Evolution",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY034",
+        "name": "X-RAY ABDOMEN A/P",
+        "price": 650,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Siemens Mobilett Mira Max",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY035",
+        "name": "X-RAY ABDOMEN E/P",
+        "price": 650,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "GE Definium 8000",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY036",
+        "name": "X-RAY ABDOMEN KUB",
+        "price": 600,
+        "sample_type": "none",
+        "turnaround_time": "1 hour",
+        "machine": "Philips DigitalDiagnost",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY037",
+        "name": "CONTRAST X-RAY IVU (WITHOUT MEDICINE)",
+        "price": 1500,
+        "sample_type": "none",
+        "turnaround_time": "2 hours",
+        "machine": "Carestream DRX-Evolution",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY038",
+        "name": "CONTRAST X-RAY BARIUM SWALLOW OF OESOPHAGUS (WITHOUT MEDICINE)",
+        "price": 1800,
+        "sample_type": "none",
+        "turnaround_time": "2 hours",
+        "machine": "Siemens Mobilett Mira Max",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY039",
+        "name": "CONTRAST X-RAY BARIUM MEAL FOLLOW THROUGH (WITHOUT MEDICINE)",
+        "price": 2000,
+        "sample_type": "none",
+        "turnaround_time": "2 hours",
+        "machine": "GE Definium 8000",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY040",
+        "name": "CONTRAST X-RAY BARIUM MEAL OF STOMACH AND DUODENUM (WITHOUT MEDICINE)",
+        "price": 2200,
+        "sample_type": "none",
+        "turnaround_time": "2 hours",
+        "machine": "Philips DigitalDiagnost",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY041",
+        "name": "MAMMOGRAM OF RIGHT BREAST",
+        "price": 2500,
+        "sample_type": "none",
+        "turnaround_time": "24 hours",
+        "machine": "Hologic Selenia Dimensions",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY042",
+        "name": "MAMMOGRAM OF LEFT BREAST",
+        "price": 2500,
+        "sample_type": "none",
+        "turnaround_time": "24 hours",
+        "machine": "Siemens Mammomat Revelation",
+        "department_code": "RAD-XR"
+      },
+      {
+        "test_id": "XRAY043",
+        "name": "MAMMOGRAM OF BOTH BREAST",
+        "price": 4000,
+        "sample_type": "none",
+        "turnaround_time": "24 hours",
+        "machine": "GE Senographe Pristina",
+        "department_code": "RAD-XR"
+      }
+    ]
+  },
+  "pathology": {
+    "hematology": [
+      {
+        "test_id": "HEM001",
+        "name": "Complete Blood Count (CBC)",
+        "price": 250,
+        "sample_type": "blood",
+        "turnaround_time": "4 hours",
+        "machine": "Sysmex XN-1000",
+        "department_code": "PATH-HEM"
+      },
+      {
+        "test_id": "HEM002",
+        "name": "Hemoglobin(Hb%)",
+        "price": 100,
+        "sample_type": "blood",
+        "turnaround_time": "2 hours",
+        "machine": "Mindray BC-6800",
+        "department_code": "PATH-HEM"
+      },
+      {
+        "test_id": "HEM003",
+        "name": "Peripheral Blood Film/PBF",
+        "price": 150,
+        "sample_type": "blood",
+        "turnaround_time": "6 hours",
+        "machine": "Sysmex XN-1000",
+        "department_code": "PATH-HEM"
+      },
+      {
+        "test_id": "HEM004",
+        "name": "Blood Circulating Total Eosinophil Count (TCE)/Eosinophil count (CEC/CE/TCE)",
+        "price": 200,
+        "sample_type": "blood",
+        "turnaround_time": "6 hours",
+        "machine": "Mindray BC-6800",
+        "department_code": "PATH-HEM"
+      },
+      {
+        "test_id": "HEM005",
+        "name": "Reticulocyte Count (R/C count)",
+        "price": 300,
+        "sample_type": "blood",
+        "turnaround_time": "8 hours",
+        "machine": "Sysmex XN-1000",
+        "department_code": "PATH-HEM"
+      },
+      {
+        "test_id": "HEM006",
+        "name": "Platelete Count",
+        "price": 120,
+        "sample_type": "blood",
+        "turnaround_time": "4 hours",
+        "machine": "Mindray BC-6800",
+        "department_code": "PATH-HEM"
+      },
+      {
+        "test_id": "HEM007",
+        "name": "BT CT",
+        "price": 180,
+        "sample_type": "blood",
+        "turnaround_time": "6 hours",
+        "machine": "Sysmex XN-1000",
+        "department_code": "PATH-HEM"
+      },
+      {
+        "test_id": "HEM008",
+        "name": "ESR",
+        "price": 80,
+        "sample_type": "blood",
+        "turnaround_time": "2 hours",
+        "machine": "Mindray BC-6800",
+        "department_code": "PATH-HEM"
+      }
+    ],
+    "thyroid": [
+      {
+        "test_id": "THY001",
+        "name": "Total Triiodothyronine (T3)",
+        "price": 350,
+        "sample_type": "serum",
+        "turnaround_time": "6 hours",
+        "machine": "Roche Cobas e411",
+        "department_code": "PATH-THY"
+      },
+      {
+        "test_id": "THY002",
+        "name": "Total Thyroxine (T4)",
+        "price": 350,
+        "sample_type": "serum",
+        "turnaround_time": "6 hours",
+        "machine": "Beckman Coulter DxI 800",
+        "department_code": "PATH-THY"
+      },
+      {
+        "test_id": "THY003",
+        "name": "Thyroid Stimulating Hormone (TSH)",
+        "price": 350,
+        "sample_type": "serum",
+        "turnaround_time": "6 hours",
+        "machine": "Siemens Centaur XP",
+        "department_code": "PATH-THY"
+      },
+      {
+        "test_id": "THY004",
+        "name": "Free Triiodothyronine (FT3)",
+        "price": 400,
+        "sample_type": "serum",
+        "turnaround_time": "6 hours",
+        "machine": "Roche Cobas e411",
+        "department_code": "PATH-THY"
+      },
+      {
+        "test_id": "THY005",
+        "name": "Free Thyroxine (FT4)",
+        "price": 400,
+        "sample_type": "serum",
+        "turnaround_time": "6 hours",
+        "machine": "Beckman Coulter DxI 800",
+        "department_code": "PATH-THY"
+      },
+      {
+        "test_id": "THY006",
+        "name": "T3, T4, TSH",
+        "price": 900,
+        "sample_type": "serum",
+        "turnaround_time": "6 hours",
+        "machine": "Siemens Centaur XP",
+        "department_code": "PATH-THY"
+      },
+      {
+        "test_id": "THY007",
+        "name": "Anti Thyroglobulin Antibody (ATG)/Anti TG",
+        "price": 600,
+        "sample_type": "serum",
+        "turnaround_time": "24 hours",
+        "machine": "Roche Cobas e411",
+        "department_code": "PATH-THY"
+      },
+      {
+        "test_id": "THY008",
+        "name": "Anti Microsomal Antibody (AMA)/TPO",
+        "price": 600,
+        "sample_type": "serum",
+        "turnaround_time": "24 hours",
+        "machine": "Beckman Coulter DxI 800",
+        "department_code": "PATH-THY"
+      },
+      {
+        "test_id": "THY009",
+        "name": "Thyroglobulin (TG)",
+        "price": 700,
+        "sample_type": "serum",
+        "turnaround_time": "24 hours",
+        "machine": "Siemens Centaur XP",
+        "department_code": "PATH-THY"
+      },
+      {
+        "test_id": "THY010",
+        "name": "Neonatal Thyroid Stimulating Hormone # (TSH)",
+        "price": 500,
+        "sample_type": "serum",
+        "turnaround_time": "6 hours",
+        "machine": "Roche Cobas e411",
+        "department_code": "PATH-THY"
+      },
+      {
+        "test_id": "THY011",
+        "name": "Anti TSH Receptor Antibody (TRAB)",
+        "price": 1200,
+        "sample_type": "serum",
+        "turnaround_time": "48 hours",
+        "machine": "Beckman Coulter DxI 800",
+        "department_code": "PATH-THY"
+      },
+      {
+        "test_id": "THY012",
+        "name": "TBG; THYROXINE BINDING GLOBULIN",
+        "price": 800,
+        "sample_type": "serum",
+        "turnaround_time": "24 hours",
+        "machine": "Siemens Centaur XP",
+        "department_code": "PATH-THY"
+      },
+      {
+        "test_id": "THY013",
+        "name": "TSI; THYROID STIMULATING IMMUNOGLOBULIN",
+        "price": 1200,
+        "sample_type": "serum",
+        "turnaround_time": "48 hours",
+        "machine": "Roche Cobas e411",
+        "department_code": "PATH-THY"
+      }
+    ],
+    "microbiology": [
+      {
+        "test_id": "MIC001",
+        "name": "Urine Culture & Sensitivity",
+        "price": 600,
+        "sample_type": "urine",
+        "turnaround_time": "48-72 hours",
+        "machine": "BD BACTEC FX40",
+        "department_code": "PATH-MIC"
+      },
+      {
+        "test_id": "MIC002",
+        "name": "Blood Culture & Sensitivity",
+        "price": 800,
+        "sample_type": "blood",
+        "turnaround_time": "48-72 hours",
+        "machine": "BacT/ALERT 3D",
+        "department_code": "PATH-MIC"
+      },
+      {
+        "test_id": "MIC003",
+        "name": "Stool Culture & Sensitivity",
+        "price": 650,
+        "sample_type": "stool",
+        "turnaround_time": "48-72 hours",
+        "machine": "BD BACTEC FX40",
+        "department_code": "PATH-MIC"
+      },
+      {
+        "test_id": "MIC004",
+        "name": "Sputum Culture & Sensitivity",
+        "price": 700,
+        "sample_type": "sputum",
+        "turnaround_time": "48-72 hours",
+        "machine": "BacT/ALERT 3D",
+        "department_code": "PATH-MIC"
+      },
+      {
+        "test_id": "MIC005",
+        "name": "Ascitic Fluid Culture & Sensitivity",
+        "price": 900,
+        "sample_type": "ascitic fluid",
+        "turnaround_time": "48-72 hours",
+        "machine": "BD BACTEC FX40",
+        "department_code": "PATH-MIC"
+      },
+      {
+        "test_id": "MIC006",
+        "name": "High Vaginal Swab Culture & Sensitivity",
+        "price": 750,
+        "sample_type": "swab",
+        "turnaround_time": "48-72 hours",
+        "machine": "BacT/ALERT 3D",
+        "department_code": "PATH-MIC"
+      },
+      {
+        "test_id": "MIC007",
+        "name": "Pleural Fluid Culture & Sensitivity",
+        "price": 900,
+        "sample_type": "pleural fluid",
+        "turnaround_time": "48-72 hours",
+        "machine": "BD BACTEC FX40",
+        "department_code": "PATH-MIC"
+      },
+      {
+        "test_id": "MIC008",
+        "name": "PUS Culture & Sensitivity",
+        "price": 800,
+        "sample_type": "pus",
+        "turnaround_time": "48-72 hours",
+        "machine": "BacT/ALERT 3D",
+        "department_code": "PATH-MIC"
+      },
+      {
+        "test_id": "MIC009",
+        "name": "Throat Swab Culture & Sensitivity",
+        "price": 700,
+        "sample_type": "swab",
+        "turnaround_time": "48-72 hours",
+        "machine": "BD BACTEC FX40",
+        "department_code": "PATH-MIC"
+      },
+      {
+        "test_id": "MIC010",
+        "name": "Wound Swab Culture & Sensitivity",
+        "price": 750,
+        "sample_type": "swab",
+        "turnaround_time": "48-72 hours",
+        "machine": "BacT/ALERT 3D",
+        "department_code": "PATH-MIC"
+      },
+      {
+        "test_id": "MIC011",
+        "name": "Ascitic Fluid Gram Stain",
+        "price": 500,
+        "sample_type": "ascitic fluid",
+        "turnaround_time": "24 hours",
+        "machine": "Manual",
+        "department_code": "PATH-MIC"
+      },
+      {
+        "test_id": "MIC013",
+        "name": "Sputum Gram Stain",
+        "price": 450,
+        "sample_type": "sputum",
+        "turnaround_time": "24 hours",
+        "machine": "Manual",
+        "department_code": "PATH-MIC"
+      },
+      {
+        "test_id": "MIC014",
+        "name": "Sputum AFB stain",
+        "price": 500,
+        "sample_type": "sputum",
+        "turnaround_time": "24 hours",
+        "machine": "Manual",
+        "department_code": "PATH-MIC"
+      },
+      {
+        "test_id": "MIC015",
+        "name": "Throat Swab Gram Stain",
+        "price": 450,
+        "sample_type": "swab",
+        "turnaround_time": "24 hours",
+        "machine": "Manual",
+        "department_code": "PATH-MIC"
+      },
+      {
+        "test_id": "MIC016",
+        "name": "PUS Gram stain",
+        "price": 500,
+        "sample_type": "pus",
+        "turnaround_time": "24 hours",
+        "machine": "Manual",
+        "department_code": "PATH-MIC"
+      }
+    ],
+    "coagulation": [
+      {
+        "test_id": "COAG001",
+        "name": "Prothrombin Time (PT)",
+        "price": 400,
+        "sample_type": "plasma",
+        "turnaround_time": "4 hours",
+        "machine": "STA R Max",
+        "department_code": "PATH-COAG"
+      },
+      {
+        "test_id": "COAG002",
+        "name": "APTT",
+        "price": 400,
+        "sample_type": "plasma",
+        "turnaround_time": "4 hours",
+        "machine": "Sysmex CS-2500",
+        "department_code": "PATH-COAG"
+      },
+      {
+        "test_id": "COAG003",
+        "name": "D-Dimer",
+        "price": 800,
+        "sample_type": "plasma",
+        "turnaround_time": "6 hours",
+        "machine": "STA R Max",
+        "department_code": "PATH-COAG"
+      },
+      {
+        "test_id": "COAG004",
+        "name": "FDP-Fibrin Degradation Product (Quantitative)",
+        "price": 900,
+        "sample_type": "plasma",
+        "turnaround_time": "6 hours",
+        "machine": "Sysmex CS-2500",
+        "department_code": "PATH-COAG"
+      },
+      {
+        "test_id": "COAG005",
+        "name": "Plasma Fibrinogen",
+        "price": 600,
+        "sample_type": "plasma",
+        "turnaround_time": "6 hours",
+        "machine": "STA R Max",
+        "department_code": "PATH-COAG"
+      },
+      {
+        "test_id": "COAG006",
+        "name": "FACTOR VIII FUNCTIONAL",
+        "price": 1200,
+        "sample_type": "plasma",
+        "turnaround_time": "48 hours",
+        "machine": "Sysmex CS-2500",
+        "department_code": "PATH-COAG"
+      },
+      {
+        "test_id": "COAG007",
+        "name": "FACTOR IX, FUNCTIONAL",
+        "price": 1200,
+        "sample_type": "plasma",
+        "turnaround_time": "48 hours",
+        "machine": "STA R Max",
+        "department_code": "PATH-COAG"
+      },
+      {
+        "test_id": "COAG008",
+        "name": "Coombs Test - Direct/Indirect",
+        "price": 700,
+        "sample_type": "blood",
+        "turnaround_time": "24 hours",
+        "machine": "Manual",
+        "department_code": "PATH-COAG"
+      }
+    ],
+    "drug_monitoring": [
+      {
+        "test_id": "DM001",
+        "name": "Valproic Acid",
+        "price": 1200,
+        "sample_type": "serum",
+        "turnaround_time": "24 hours",
+        "machine": "Roche Cobas e411",
+        "department_code": "PATH-DM"
+      },
+      {
+        "test_id": "DM002",
+        "name": "Carbamazepine/Tegretol",
+        "price": 1200,
+        "sample_type": "serum",
+        "turnaround_time": "24 hours",
+        "machine": "Beckman Coulter DxI 800",
+        "department_code": "PATH-DM"
+      }
+    ],
+    "pcr": [
+      {
+        "test_id": "PCR001",
+        "name": "HIV1 RNA Qualitative (PCR)",
+        "price": 3000,
+        "sample_type": "plasma",
+        "turnaround_time": "72 hours",
+        "machine": "Roche Cobas 6800",
+        "department_code": "PATH-PCR"
+      },
+      {
+        "test_id": "PCR002",
+        "name": "HIV1 RNA Quantitative (PCR)",
+        "price": 3500,
+        "sample_type": "plasma",
+        "turnaround_time": "72 hours",
+        "machine": "Abbott m2000",
+        "department_code": "PATH-PCR"
+      }
+    ],
+    "histopathology": [
+      {
+        "test_id": "HIST001",
+        "name": "FNAC test",
+        "price": 1500,
+        "sample_type": "tissue",
+        "turnaround_time": "72 hours",
+        "machine": "Manual",
+        "department_code": "PATH-HIST"
+      },
+      {
+        "test_id": "HIST002",
+        "name": "PAP's Smear",
+        "price": 1200,
+        "sample_type": "cervical smear",
+        "turnaround_time": "72 hours",
+        "machine": "Manual",
+        "department_code": "PATH-HIST"
+      }
+    ],
+    "allergy": [
+      {
+        "test_id": "ALG001",
+        "name": "Total IgE",
+        "price": 800,
+        "sample_type": "serum",
+        "turnaround_time": "24 hours",
+        "machine": "Phadia 250",
+        "department_code": "PATH-ALG"
+      }
+    ],
+    "additional_tests": [
+      {
+        "test_id": "ADD001",
+        "name": "ACE",
+        "price": 900,
+        "sample_type": "serum",
+        "turnaround_time": "24 hours",
+        "machine": "Roche Cobas e411",
+        "department_code": "PATH-ADD"
+      }
+    ]
+  }
+}

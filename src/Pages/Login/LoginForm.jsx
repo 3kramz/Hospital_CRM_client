@@ -13,11 +13,11 @@ const LoginForm = () => {
     formState: { errors },
   } = useForm();
 
-  const { signIn } = useContext(AuthContext);
+  const { signIn, loading } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = location.state?.from?.pathname || "/dashboard/patient-entry";
+  const from = location.state?.from?.pathname || "/dashboard/assign-test";
 
   const onSubmit = (data) => {
     signIn(data.email, data.password).then(() => {
@@ -25,6 +25,13 @@ const LoginForm = () => {
       reset();
     });
   };
+if (loading) {
+  return (
+    <div className="flex justify-center items-center h-screen">
+      <div className="loader"></div>
+    </div>
+  );
+}
 
   return (
     <div className="w-full max-w-md p-8 rounded-lg shadow-md">
