@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import useAuth from "./useAuth";
 
 const axiosSecure = axios.create({
-    // baseURL: 'https://quick-shop-server.vercel.app'
     baseURL: "http://localhost:5080/",
 })
 const useAxiosSecure = () => {

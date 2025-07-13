@@ -14,3 +14,54 @@
   --color-background: #0B263D;
   --color-foreground: #77B4E6;
 }
+.input {
+  @apply border border-gray-300 rounded px-4 py-2 w-full;
+}
+
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  .print-area,
+  .print-area * {
+    visibility: visible !important;
+  }
+
+  .print-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px;
+    background: white;
+  }
+}
+
+
+.print-area {
+  background: white;
+  color: black;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  width: 700px;
+  max-width: 90vw;
+  border-radius: 8px;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}

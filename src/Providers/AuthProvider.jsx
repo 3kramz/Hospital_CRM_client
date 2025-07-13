@@ -1,7 +1,6 @@
 import { createContext, useEffect, useState } from "react";
 import {
   getAuth,
-  GoogleAuthProvider,
   onAuthStateChanged,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
@@ -17,7 +16,6 @@ const auth = getAuth(app);
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
 
   const signIn = (email, password) => {
     setLoading(true);
@@ -42,6 +40,7 @@ const AuthProvider = ({ children }) => {
         const userInfo = { email: currentUser.email };
         axiosPublic.post("/jwt", userInfo).then((res) => {
           if (res.data.token) {
+            console.log("hellooo")
             localStorage.setItem("access-token", res.data.token);
             setLoading(false);
           }
@@ -51,9 +50,8 @@ const AuthProvider = ({ children }) => {
         setLoading(false);
       }
     });
-    return () => {
-      return unsubscribe();
-    };
+
+    return () => unsubscribe();
   }, []);
 
   const AuthInfo = {
