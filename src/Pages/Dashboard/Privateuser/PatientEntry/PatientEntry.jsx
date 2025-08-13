@@ -1,56 +1,112 @@
-import { useEffect, useState } from "react";
-import InvoiceModal from "./InvoiceModal";
-import html2pdf from "html2pdf.js";
-
-// Simulated patient DB
-const mockPatients = [
-  {
-    patientId: "PID1001",
-    name: "Alice Johnson",
-    age: 34,
-    gender: "Female",
-    contact: "9991110000",
-    refDoctor: "Dr. Roy",
-    pcName: "PC-101",
-    dueAmount: 200,
-  },
-  {
-    patientId: "PID1002",
-    name: "Bob Smith",
-    age: 45,
-    gender: "Male",
-    contact: "8882221111",
-    refDoctor: "Dr. Gupta",
-    pcName: "PC-102",
-    dueAmount: 0,
-  },
-];
+import { useEffect, useState, useCallback } from "react";
+import { debounce } from "lodash";
+import useAxiosSecure from "../../../../Hook/useAxiosSecure";
 
 const PatientEntry = () => {
-  const [tests, setTests] = useState([]);
-  const [discounts, setDiscounts] = useState({});
-  const [searchQuery, setSearchQuery] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
-  const [previousDue, setPreviousDue] = useState(0);
-  const [payment, setPayment] = useState(0);
-  const [updatedDue, setUpdatedDue] = useState(0);
-  const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
-  const [triggerPrint, setTriggerPrint] = useState(false);
+  const axiosSecure = useAxiosSecure();
 
+  // Patient Info & Search
   const [patientInfo, setPatientInfo] = useState({
     name: "",
     age: "",
     gender: "",
-    contact: "",
+    phone: "",
     refDoctor: "",
     pcName: "",
-    patientId: "",
+    pid: "",
   });
 
-  // On mount, load selected tests from localStorage (mock)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+
+  // Ref Doctor Search
+  const [refDoctorQuery, setRefDoctorQuery] = useState("");
+  const [refDoctorSuggestions, setRefDoctorSuggestions] = useState([]);
+
+  // Tests and discounts
+  const [tests, setTests] = useState([]);
+  const [discounts, setDiscounts] = useState({});
+
+  // Billing info
+  const [previousDue, setPreviousDue] = useState(0);
+  const [payment, setPayment] = useState(0);
+  const [updatedDue, setUpdatedDue] = useState(0);
+
+  // === Patient Search (debounced) ===
+  const searchPatients = useCallback(
+    debounce(async (query) => {
+      if (!query.trim()) {
+        setSuggestions([]);
+        return;
+      }
+      try {
+        const { data } = await axiosSecure.get(`/patients/search?q=${query}`);
+        setSuggestions(data);
+      } catch (err) {
+        console.error("Error searching patients:", err);
+        setSuggestions([]);
+      }
+    }, 400),
+    [axiosSecure]
+  );
+
+  const searchRefDoctors = useCallback(
+    debounce(async (query) => {
+      if (!query.trim()) {
+        setRefDoctorSuggestions([]);
+        return;
+      }
+      try {
+        const { data } = await axiosSecure.get(`/doctors/search?q=${query}`);
+        setRefDoctorSuggestions(data);
+      } catch (err) {
+        console.error("Error searching doctors:", err);
+        setRefDoctorSuggestions([]);
+      }
+    }, 400),
+    [axiosSecure]
+  );
+
+  // Handlers
+  const handleSearchChange = (e) => {
+    const val = e.target.value;
+    setSearchQuery(val);
+    searchPatients(val);
+  };
+
+  const handlePatientSelect = (patient) => {
+    setPatientInfo({
+      name: patient.name,
+      age: patient.age || "",
+      gender: patient.gender || "",
+      phone: patient.phone || "",
+      refDoctor: patient.refDoctor || "",
+      pcName: patient.pcName || "",
+      pid: patient.pid || "",
+    });
+    setPreviousDue(patient.dueAmount || 0);
+    setSearchQuery(`${patient.name} (${patient.pid})`);
+    setSuggestions([]);
+  };
+
+  const handleRefDoctorChange = (e) => {
+    const val = e.target.value;
+    setPatientInfo((prev) => ({ ...prev, refDoctor: val }));
+    setRefDoctorQuery(val);
+    searchRefDoctors(val);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setPatientInfo((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Load tests from localStorage on mount
   useEffect(() => {
     const storedTests = JSON.parse(localStorage.getItem("selectedTests")) || [];
     setTests(storedTests);
+
+    // Initialize discounts for each test to 0
     const initialDiscounts = {};
     storedTests.forEach((test) => {
       initialDiscounts[test.test_id] = 0;
@@ -58,121 +114,67 @@ const PatientEntry = () => {
     setDiscounts(initialDiscounts);
   }, []);
 
-  const handleDiscountChange = (testId, value) => {
+  const handleDiscountChange = (testId, val) => {
     setDiscounts((prev) => ({
       ...prev,
-      [testId]: parseFloat(value) || 0,
+      [testId]: parseFloat(val) || 0,
     }));
   };
 
-  const calculateAmount = (price, discount) => price - (discount || 0);
-
-  const total = tests.reduce((sum, test) => sum + test.price, 0);
+  // Billing calculations (without VAT as requested)
+  const total = tests.reduce((sum, t) => sum + t.price, 0);
   const totalDiscount = tests.reduce(
-    (sum, test) => sum + (discounts[test.test_id] || 0),
+    (sum, t) => sum + (discounts[t.test_id] || 0),
     0
   );
-  const vat = 0.05 * (total - totalDiscount);
-  const grandTotal = total - totalDiscount + vat;
+  const grandTotal = total - totalDiscount;
   const finalTotal = grandTotal + previousDue;
 
   useEffect(() => {
     setUpdatedDue(Math.max(finalTotal - payment, 0));
   }, [payment, finalTotal]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setPatientInfo((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSearchChange = (e) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-    const filtered = mockPatients.filter(
-      (p) =>
-        p.name.toLowerCase().includes(value.toLowerCase()) ||
-        p.patientId.toLowerCase().includes(value.toLowerCase())
-    );
-    setSuggestions(filtered);
-  };
-
-  const handlePatientSelect = (patient) => {
-    setPatientInfo(patient);
-    setPreviousDue(patient.dueAmount || 0);
-    setSearchQuery(`${patient.name} (${patient.patientId})`);
-    setSuggestions([]);
-  };
-
-  const handleSave = async () => {
-    let finalPatient = { ...patientInfo };
-
-    if (!finalPatient.patientId || finalPatient.patientId.startsWith("PIDNEW")) {
-      finalPatient.patientId = "PID" + Date.now();
-    }
-
-    const billData = {
-      patientInfo: finalPatient,
-      tests,
-      discounts,
-      payment,
-      previousDue,
-      updatedDue,
-      grandTotal: finalTotal,
-    };
-
+  // Save & Print handler
+  const handleSaveAndPrint = async () => {
     try {
-      const res = await fetch("/api/patient-bill", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(billData),
-      });
+      let finalPatient = { ...patientInfo };
 
-      const data = await res.json();
-      if (data.success) {
-        alert("Bill saved to backend successfully.");
+      // Clear pid if new patient to trigger creation on backend
+      if (!finalPatient.pid || finalPatient.pid.startsWith("PIDNEW")) {
+        finalPatient.pid = "";
       }
-    } catch (err) {
-      console.error("Error saving bill:", err);
-      alert("Failed to save.");
+
+      const billData = {
+        patientInfo: finalPatient,
+        tests,
+        discounts,
+        payment,
+        updatedDue,
+        grandTotal: finalTotal,
+      };
+
+      const { data } = await axiosSecure.post("/save-patient-bill", billData);
+
+      if (data.success) {
+        alert("Bill saved successfully.");
+
+        // Update pid if new patient created
+        if (!finalPatient.pid) {
+          setPatientInfo((prev) => ({ ...prev, pid: data.pid }));
+        }
+
+        // Open new tab for first test
+        if (data.testId) {
+          window.open(`/tests/${data.testId}`, "_blank");
+        }
+      } else {
+        alert("Failed to save bill.");
+      }
+    } catch (error) {
+      console.error("Error saving bill:", error);
+      alert("Failed to save bill.");
     }
   };
-
-  // Print invoice using html2pdf when triggered
-  useEffect(() => {
-    if (isInvoiceOpen && triggerPrint) {
-      const element = document.querySelector(".print-area");
-      if (!element) {
-        setTriggerPrint(false);
-        return;
-      }
-      // Delay a bit to ensure modal content rendered
-      setTimeout(() => {
-        html2pdf()
-          .set({
-            margin: 0.3,
-            filename: `invoice_${Date.now()}.pdf`,
-            image: { type: "jpeg", quality: 0.98 },
-            html2canvas: { scale: 2, logging: false, dpi: 192, letterRendering: true },
-            jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
-          })
-          .from(element)
-          .outputPdf("bloburl")
-          .then((pdfUrl) => {
-            window.open(pdfUrl, "_blank");
-            setTriggerPrint(false);
-            setIsInvoiceOpen(false);
-          })
-          .catch((err) => {
-            console.error("PDF generation error:", err);
-            setTriggerPrint(false);
-            setIsInvoiceOpen(false);
-          });
-      }, 300);
-    }
-  }, [isInvoiceOpen, triggerPrint]);
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen overflow-auto">
@@ -181,7 +183,7 @@ const PatientEntry = () => {
           Patient Entry
         </h2>
 
-        {/* Search Patient */}
+        {/* Patient Search */}
         <div className="relative">
           <input
             type="text"
@@ -194,18 +196,18 @@ const PatientEntry = () => {
             <ul className="absolute bg-white border rounded w-full mt-1 z-50 shadow max-h-60 overflow-y-auto">
               {suggestions.map((p) => (
                 <li
-                  key={p.patientId}
+                  key={p._id || p.uid}
                   onClick={() => handlePatientSelect(p)}
                   className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                 >
-                  {p.name} ({p.patientId})
+                  {p.name} ({p.pid})
                 </li>
               ))}
             </ul>
           )}
         </div>
 
-        {/* Patient Info */}
+        {/* Patient Info Inputs */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <input
             type="text"
@@ -235,20 +237,39 @@ const PatientEntry = () => {
           </select>
           <input
             type="text"
-            name="contact"
-            value={patientInfo.contact}
+            name="phone"
+            value={patientInfo.phone}
             onChange={handleInputChange}
             placeholder="Contact"
             className="input"
           />
-          <input
-            type="text"
-            name="refDoctor"
-            value={patientInfo.refDoctor}
-            onChange={handleInputChange}
-            placeholder="Ref. Doctor"
-            className="input"
-          />
+          <div className="relative">
+            <input
+              type="text"
+              name="refDoctor"
+              value={patientInfo.refDoctor}
+              onChange={handleRefDoctorChange}
+              placeholder="Ref. Doctor"
+              className="input"
+              autoComplete="off"
+            />
+            {refDoctorSuggestions.length > 0 && (
+              <ul className="absolute bg-white border rounded w-full mt-1 z-50 shadow max-h-48 overflow-y-auto">
+                {refDoctorSuggestions.map((doc) => (
+                  <li
+                    key={doc._id || doc.id}
+                    onClick={() => {
+                      setPatientInfo((prev) => ({ ...prev, refDoctor: doc.name }));
+                      setRefDoctorSuggestions([]);
+                    }}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                  >
+                    {doc.name}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
           <input
             type="text"
             name="pcName"
@@ -278,10 +299,12 @@ const PatientEntry = () => {
                 {tests.map((test) => (
                   <tr key={test.test_id} className="border-t">
                     <td className="p-2">{test.name}</td>
-                    <td className="p-2">{test.price}</td>
+                    <td className="p-2">{test.price.toFixed(2)}</td>
                     <td className="p-2">
                       <input
                         type="number"
+                        min={0}
+                        max={test.price}
                         value={discounts[test.test_id] || ""}
                         onChange={(e) =>
                           handleDiscountChange(test.test_id, e.target.value)
@@ -290,7 +313,7 @@ const PatientEntry = () => {
                       />
                     </td>
                     <td className="p-2 font-semibold">
-                      {calculateAmount(test.price, discounts[test.test_id] || 0)}
+                      {(test.price - (discounts[test.test_id] || 0)).toFixed(2)}
                     </td>
                   </tr>
                 ))}
@@ -302,11 +325,8 @@ const PatientEntry = () => {
           <div className="mt-6 text-right space-y-2">
             <p>Total: {total.toFixed(2)}</p>
             <p>Discount: {totalDiscount.toFixed(2)}</p>
-            <p>VAT (5%): {vat.toFixed(2)}</p>
             <p>Previous Due: {previousDue.toFixed(2)}</p>
-            <p className="font-bold">
-              Current Grand Total: {grandTotal.toFixed(2)}
-            </p>
+            <p className="font-bold">Current Grand Total: {grandTotal.toFixed(2)}</p>
             <p className="text-blue-700 font-semibold">
               Final Total (incl. Due): {finalTotal.toFixed(2)}
             </p>
@@ -333,53 +353,22 @@ const PatientEntry = () => {
           <button
             onClick={() => {
               setTests([]);
-              localStorage.clear();
+              localStorage.removeItem("selectedTests");
+              setDiscounts({});
             }}
             className="bg-gray-600 text-white px-4 py-2 rounded shadow hover:bg-gray-700"
           >
             Clear
           </button>
+
           <button
-            onClick={handleSave}
-            className="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700"
-          >
-            Save
-          </button>
-          <button
-            onClick={() => setIsInvoiceOpen(true)}
-            className="bg-yellow-600 text-white px-6 py-2 rounded shadow hover:bg-yellow-700"
-          >
-            Preview Invoice
-          </button>
-          <button
-            onClick={() => {
-              setIsInvoiceOpen(true);
-              setTriggerPrint(true);
-            }}
+            onClick={handleSaveAndPrint}
             className="bg-green-600 text-white px-6 py-2 rounded shadow hover:bg-green-700"
           >
-            Print Invoice
+            Save & Print
           </button>
         </div>
       </div>
-
-      {/* Invoice Modal */}
-      <InvoiceModal
-        isOpen={isInvoiceOpen}
-        onClose={() => {
-          setIsInvoiceOpen(false);
-          setTriggerPrint(false);
-        }}
-        patientInfo={patientInfo}
-        tests={tests}
-        total={total}
-        totalDiscount={totalDiscount}
-        vat={vat}
-        previousDue={previousDue}
-        payment={payment}
-        updatedDue={updatedDue}
-        grandTotal={finalTotal}
-      />
     </div>
   );
 };

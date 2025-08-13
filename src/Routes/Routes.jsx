@@ -9,6 +9,7 @@ import Dashboard from "../Pages/Dashboard/Dashboard";
 import ForgetPassword from "../Pages/ForgetPassword/ForgetPassword";
 import PatientEntry from "../Pages/Dashboard/Privateuser/PatientEntry/PatientEntry";
 import AssignTest from "../Pages/Dashboard/Privateuser/AssignTest/AssignTest";
+import Invoice from "../Pages/Dashboard/Privateuser/Invoice/Invoice";
 
 
 export const router = createBrowserRouter([
@@ -35,6 +36,10 @@ export const router = createBrowserRouter([
            {
             path: "assign-test",
             element: <AssignTest />,
+          },
+          {
+            path: "invoice/:uid",
+            element: <Invoice />,
           },
         ],
       },
