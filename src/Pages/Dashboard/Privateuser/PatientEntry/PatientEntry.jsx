@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { debounce } from "lodash";
 import useAxiosSecure from "../../../../Hook/useAxiosSecure";
 
@@ -11,6 +11,8 @@ const PatientEntry = () => {
     age: "",
     gender: "",
     phone: "",
+    address: "",
+    email: "",
     refDoctor: "",
     pcName: "",
     pid: "",
@@ -18,6 +20,7 @@ const PatientEntry = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
 
   // Ref Doctor Search
   const [refDoctorQuery, setRefDoctorQuery] = useState("");
@@ -32,16 +35,31 @@ const PatientEntry = () => {
   const [payment, setPayment] = useState(0);
   const [updatedDue, setUpdatedDue] = useState(0);
 
+  // Refs for Enter key navigation
+  const nameRef = useRef();
+  const ageRef = useRef();
+  const genderRef = useRef();
+  const phoneRef = useRef();
+  const addressRef = useRef();
+  const emailRef = useRef();
+  const refDoctorRef = useRef();
+  const pcNameRef = useRef();
+  const paymentRef = useRef();
+
   // === Patient Search (debounced) ===
   const searchPatients = useCallback(
     debounce(async (query) => {
       if (!query.trim()) {
         setSuggestions([]);
+        setSelectedSuggestionIndex(-1);
+        setPreviousDue(0);
         return;
       }
       try {
         const { data } = await axiosSecure.get(`/patients/search?q=${query}`);
         setSuggestions(data);
+        console.log(data);
+        setSelectedSuggestionIndex(-1);
       } catch (err) {
         console.error("Error searching patients:", err);
         setSuggestions([]);
@@ -68,10 +86,35 @@ const PatientEntry = () => {
   );
 
   // Handlers
-  const handleSearchChange = (e) => {
-    const val = e.target.value;
-    setSearchQuery(val);
-    searchPatients(val);
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setPatientInfo((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "name") {
+      setSearchQuery(value);
+      searchPatients(value);
+    }
+
+    if (name === "refDoctor") {
+      setRefDoctorQuery(value);
+      searchRefDoctors(value);
+    }
+
+    // If user clears patient name, clear other fields
+    if (name === "name" && value === "") {
+      setPatientInfo({
+        name: "",
+        age: "",
+        gender: "",
+        phone: "",
+        address: "",
+        email: "",
+        refDoctor: "",
+        pcName: "",
+        pid: "",
+      });
+      setPreviousDue(0);
+    }
   };
 
   const handlePatientSelect = (patient) => {
@@ -80,6 +123,8 @@ const PatientEntry = () => {
       age: patient.age || "",
       gender: patient.gender || "",
       phone: patient.phone || "",
+      address: patient.address || "",
+      email: patient.email || "",
       refDoctor: patient.refDoctor || "",
       pcName: patient.pcName || "",
       pid: patient.pid || "",
@@ -87,32 +132,36 @@ const PatientEntry = () => {
     setPreviousDue(patient.dueAmount || 0);
     setSearchQuery(`${patient.name} (${patient.pid})`);
     setSuggestions([]);
+    setSelectedSuggestionIndex(-1);
   };
 
-  const handleRefDoctorChange = (e) => {
-    const val = e.target.value;
-    setPatientInfo((prev) => ({ ...prev, refDoctor: val }));
-    setRefDoctorQuery(val);
-    searchRefDoctors(val);
+  const handleSuggestionKeyDown = (e) => {
+    if (!suggestions.length) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedSuggestionIndex((prev) =>
+        prev < suggestions.length - 1 ? prev + 1 : 0
+      );
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedSuggestionIndex((prev) =>
+        prev > 0 ? prev - 1 : suggestions.length - 1
+      );
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (selectedSuggestionIndex >= 0) {
+        handlePatientSelect(suggestions[selectedSuggestionIndex]);
+      } else {
+        ageRef.current.focus();
+      }
+    }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setPatientInfo((prev) => ({ ...prev, [name]: value }));
+  const handleRefDoctorSelect = (doctor) => {
+    setPatientInfo((prev) => ({ ...prev, refDoctor: doctor.name }));
+    setRefDoctorSuggestions([]);
   };
-
-  // Load tests from localStorage on mount
-  useEffect(() => {
-    const storedTests = JSON.parse(localStorage.getItem("selectedTests")) || [];
-    setTests(storedTests);
-
-    // Initialize discounts for each test to 0
-    const initialDiscounts = {};
-    storedTests.forEach((test) => {
-      initialDiscounts[test.test_id] = 0;
-    });
-    setDiscounts(initialDiscounts);
-  }, []);
 
   const handleDiscountChange = (testId, val) => {
     setDiscounts((prev) => ({
@@ -121,7 +170,18 @@ const PatientEntry = () => {
     }));
   };
 
-  // Billing calculations (without VAT as requested)
+  // Load tests from localStorage on mount
+  useEffect(() => {
+    const storedTests = JSON.parse(localStorage.getItem("selectedTests")) || [];
+    setTests(storedTests);
+    const initialDiscounts = {};
+    storedTests.forEach((test) => {
+      initialDiscounts[test.test_id] = 0;
+    });
+    setDiscounts(initialDiscounts);
+  }, []);
+
+  // Billing calculations
   const total = tests.reduce((sum, t) => sum + t.price, 0);
   const totalDiscount = tests.reduce(
     (sum, t) => sum + (discounts[t.test_id] || 0),
@@ -134,18 +194,48 @@ const PatientEntry = () => {
     setUpdatedDue(Math.max(finalTotal - payment, 0));
   }, [payment, finalTotal]);
 
-  // Save & Print handler
-  const handleSaveAndPrint = async () => {
-    try {
-      let finalPatient = { ...patientInfo };
+  // Enter key navigation between inputs
+  const handleEnterFocus = (e, nextRef) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      nextRef.current?.focus();
+    }
+  };
 
-      // Clear pid if new patient to trigger creation on backend
-      if (!finalPatient.pid || finalPatient.pid.startsWith("PIDNEW")) {
-        finalPatient.pid = "";
+  const handleSaveAndPrint = async () => {
+    const { name, age, gender, phone, address } = patientInfo;
+
+    if (!name || !age || !gender || !phone || !address) {
+      alert("Please fill in all required patient fields.");
+      return;
+    }
+
+    if (tests.length === 0) {
+      alert("Please select at least one test.");
+      return;
+    }
+
+    try {
+      // Step 1: Save patient
+      const { data: patientRes } = await axiosSecure.post("/patients/save", {
+        patientInfo,
+      });
+      console.log(patientInfo)
+      if (!patientRes.success) {
+        alert("Failed to save patient: " + patientRes.error);
+        return;
       }
 
+      const pid = patientRes.pid;
+      const previousDueFromBackend = patientRes.previousDue || 0;
+
+      // Update local state for correct due
+      setPatientInfo((prev) => ({ ...prev, pid }));
+      setPreviousDue(previousDueFromBackend);
+
+      // Step 2: Save bill
       const billData = {
-        patientInfo: finalPatient,
+        patientInfo: { ...patientInfo, pid },
         tests,
         discounts,
         payment,
@@ -153,26 +243,42 @@ const PatientEntry = () => {
         grandTotal: finalTotal,
       };
 
-      const { data } = await axiosSecure.post("/save-patient-bill", billData);
+      const { data: billRes } = await axiosSecure.post(
+        "/save-patient-bill",
+        billData
+      );
 
-      if (data.success) {
+      if (billRes.success) {
         alert("Bill saved successfully.");
-
-        // Update pid if new patient created
-        if (!finalPatient.pid) {
-          setPatientInfo((prev) => ({ ...prev, pid: data.pid }));
+        if (billRes.groupId) {
+          const url = `${window.location.origin}/invoice/${billRes.groupId}`;
+          window.open(url, "_blank", "noopener,noreferrer");
         }
 
-        // Open new tab for first test
-        if (data.testId) {
-          window.open(`/tests/${data.testId}`, "_blank");
-        }
+        // Reset form
+        setPatientInfo({
+          name: "",
+          age: "",
+          gender: "",
+          phone: "",
+          address: "",
+          email: "",
+          refDoctor: "",
+          pcName: "",
+          pid: "",
+        });
+        setTests([]);
+        setDiscounts({});
+        localStorage.removeItem("selectedTests");
+        setPayment(0);
+        setPreviousDue(0);
+        setUpdatedDue(0);
       } else {
-        alert("Failed to save bill.");
+        alert("Failed to save bill: " + billRes.error);
       }
-    } catch (error) {
-      console.error("Error saving bill:", error);
-      alert("Failed to save bill.");
+    } catch (err) {
+      console.error("Error saving bill:", err);
+      alert("Error saving bill. See console.");
     }
   };
 
@@ -183,72 +289,110 @@ const PatientEntry = () => {
           Patient Entry
         </h2>
 
-        {/* Patient Search */}
-        <div className="relative">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={handleSearchChange}
-            placeholder="Search by Patient ID or Name"
-            className="w-full border border-gray-300 rounded px-4 py-2"
-          />
-          {suggestions.length > 0 && (
-            <ul className="absolute bg-white border rounded w-full mt-1 z-50 shadow max-h-60 overflow-y-auto">
-              {suggestions.map((p) => (
-                <li
-                  key={p._id || p.uid}
-                  onClick={() => handlePatientSelect(p)}
-                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                >
-                  {p.name} ({p.pid})
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
         {/* Patient Info Inputs */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 relative">
+          <div className="relative">
+            <input
+              ref={nameRef}
+              type="text"
+              name="name"
+              value={patientInfo.name}
+              onChange={handleInputChange}
+              onKeyDown={(e) => {
+                handleSuggestionKeyDown(e);
+                handleEnterFocus(e, ageRef);
+              }}
+              placeholder="Patient Name *"
+              className="input"
+              autoComplete="off"
+            />
+            {suggestions.length > 0 && (
+              <ul className="absolute bg-white border rounded w-full mt-1 z-50 shadow max-h-60 overflow-y-auto">
+                {suggestions.map((p, idx) => (
+                  <li
+                    key={p._id || p.uid}
+                    onClick={() => handlePatientSelect(p)}
+                    className={`px-4 py-2 cursor-pointer ${
+                      idx === selectedSuggestionIndex
+                        ? "bg-gray-200"
+                        : "hover:bg-gray-100"
+                    }`}
+                  >
+                    {p.name} ({p.pid})
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
           <input
-            type="text"
-            name="name"
-            value={patientInfo.name}
-            onChange={handleInputChange}
-            placeholder="Patient Name"
-            className="input"
-          />
-          <input
+            ref={ageRef}
             type="number"
             name="age"
             value={patientInfo.age}
             onChange={handleInputChange}
-            placeholder="Age"
+            onKeyDown={(e) => handleEnterFocus(e, genderRef)}
+            placeholder="Age *"
             className="input"
           />
+
           <select
+            ref={genderRef}
             name="gender"
             value={patientInfo.gender}
             onChange={handleInputChange}
+            onKeyDown={(e) => handleEnterFocus(e, phoneRef)}
             className="input"
           >
-            <option value="">Gender</option>
+            <option value="">Gender *</option>
             <option>Male</option>
             <option>Female</option>
           </select>
+
           <input
+            ref={phoneRef}
             type="text"
             name="phone"
             value={patientInfo.phone}
             onChange={handleInputChange}
-            placeholder="Contact"
+            onKeyDown={(e) => handleEnterFocus(e, addressRef)}
+            placeholder="Contact *"
             className="input"
           />
+
+          <input
+            ref={addressRef}
+            type="text"
+            name="address"
+            value={patientInfo.address}
+            onChange={handleInputChange}
+            onKeyDown={(e) => handleEnterFocus(e, emailRef)}
+            placeholder="Address *"
+            className="input"
+          />
+
+          <input
+            ref={emailRef}
+            type="email"
+            name="email"
+            value={patientInfo.email}
+            onChange={handleInputChange}
+            onKeyDown={(e) => handleEnterFocus(e, refDoctorRef)}
+            placeholder="Email"
+            className="input"
+          />
+
           <div className="relative">
             <input
+              ref={refDoctorRef}
               type="text"
               name="refDoctor"
               value={patientInfo.refDoctor}
-              onChange={handleRefDoctorChange}
+              onChange={handleInputChange}
+              onKeyDown={(e) => {
+                handleSuggestionKeyDown(e);
+                handleEnterFocus(e, ageRef);
+              }}
               placeholder="Ref. Doctor"
               className="input"
               autoComplete="off"
@@ -258,10 +402,7 @@ const PatientEntry = () => {
                 {refDoctorSuggestions.map((doc) => (
                   <li
                     key={doc._id || doc.id}
-                    onClick={() => {
-                      setPatientInfo((prev) => ({ ...prev, refDoctor: doc.name }));
-                      setRefDoctorSuggestions([]);
-                    }}
+                    onClick={() => handleRefDoctorSelect(doc)}
                     className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                   >
                     {doc.name}
@@ -270,11 +411,14 @@ const PatientEntry = () => {
               </ul>
             )}
           </div>
+
           <input
+            ref={pcNameRef}
             type="text"
             name="pcName"
             value={patientInfo.pcName}
             onChange={handleInputChange}
+            onKeyDown={(e) => handleEnterFocus(e, paymentRef)}
             placeholder="PC Name"
             className="input"
           />
@@ -283,7 +427,7 @@ const PatientEntry = () => {
         {/* Billing Table */}
         <div>
           <h3 className="text-xl font-semibold text-center text-white bg-primary py-2 rounded">
-            Diagnoses and Billing
+            Diagnostics and Billing
           </h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-t border-b border-gray-300 mt-4">
@@ -326,7 +470,9 @@ const PatientEntry = () => {
             <p>Total: {total.toFixed(2)}</p>
             <p>Discount: {totalDiscount.toFixed(2)}</p>
             <p>Previous Due: {previousDue.toFixed(2)}</p>
-            <p className="font-bold">Current Grand Total: {grandTotal.toFixed(2)}</p>
+            <p className="font-bold">
+              Current Grand Total: {grandTotal.toFixed(2)}
+            </p>
             <p className="text-blue-700 font-semibold">
               Final Total (incl. Due): {finalTotal.toFixed(2)}
             </p>
@@ -334,6 +480,7 @@ const PatientEntry = () => {
             <div className="flex justify-end items-center gap-2">
               <label>Payment:</label>
               <input
+                ref={paymentRef}
                 type="number"
                 min="0"
                 value={payment}

@@ -48,7 +48,6 @@ const Dashboard = () => {
 
           <SidebarItem to="assign-test" icon={<FiUserCheck />} label="TESTS" collapsed={collapsed} />
           <SidebarItem to="patient-entry" icon={<FiUserCheck />} label="Reception" collapsed={collapsed} />
-          <SidebarItem to="patient-bill" icon={<FiFileText />} label="Reception Bill" collapsed={collapsed} />
           <SidebarItem to="reports" icon={<FiFileText />} label="Reports" collapsed={collapsed} />
           <SidebarItem to="settings" icon={<FiSettings />} label="Settings" collapsed={collapsed} />
           <SidebarItem to="change-password" icon={<FiLock />} label="Change Password" collapsed={collapsed} />

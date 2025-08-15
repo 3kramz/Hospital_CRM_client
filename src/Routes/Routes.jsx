@@ -10,6 +10,7 @@ import ForgetPassword from "../Pages/ForgetPassword/ForgetPassword";
 import PatientEntry from "../Pages/Dashboard/Privateuser/PatientEntry/PatientEntry";
 import AssignTest from "../Pages/Dashboard/Privateuser/AssignTest/AssignTest";
 import Invoice from "../Pages/Dashboard/Privateuser/Invoice/Invoice";
+import Reports from "../Pages/Dashboard/Privateuser/Reports/Reports";
 
 
 export const router = createBrowserRouter([
@@ -38,11 +39,15 @@ export const router = createBrowserRouter([
             element: <AssignTest />,
           },
           {
-            path: "invoice/:uid",
-            element: <Invoice />,
+            path: "reports",
+            element: <Reports />,
           },
         ],
       },
+      {
+            path: "invoice/:groupId",
+            element: <Invoice />,
+          },
     ],
   },
   {
