@@ -247,12 +247,18 @@ const PatientEntry = () => {
         "/save-patient-bill",
         billData
       );
+      console.log("Bill Response:", billRes);
 
       if (billRes.success) {
         alert("Bill saved successfully.");
-        if (billRes.groupId) {
-          const url = `${window.location.origin}/invoice/${billRes.groupId}`;
+        const invoiceId = billRes.groupId || billRes.insertedId || billRes._id;
+        if (invoiceId) {
+          const url = `${window.location.origin}/invoice/${invoiceId}`;
+          console.log("Opening invoice at:", url);
           window.open(url, "_blank", "noopener,noreferrer");
+        } else {
+            console.warn("Bill saved, but no ID returned to open invoice.", billRes);
+            alert("Bill saved, but could not open invoice automatically.");
         }
 
         // Reset form

@@ -20,10 +20,13 @@ const LoginForm = () => {
   const from = location.state?.from?.pathname || "/dashboard/assign-test";
 
   const onSubmit = (data) => {
-    signIn(data.email, data.password).then(() => {
-      navigate(from, { replace: true });
-      reset();
-    });
+   signIn(data.email, data.password)
+            .then(result => {
+                const user = result.user;
+                console.log(user);
+                
+                navigate(from, { replace: true });
+            })
   };
 if (loading) {
   return (

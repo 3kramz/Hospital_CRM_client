@@ -38,7 +38,7 @@ console.log(previousDue)
   return (
     <div
       ref={ref}
-      className="p-6 max-w-3xl mx-auto bg-white border shadow-sm relative"
+      className="print-container p-6 max-w-3xl mx-auto bg-white border shadow-sm relative"
     >
       {/* Header */}
       <div className="flex justify-between mb-4">

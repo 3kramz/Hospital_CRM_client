@@ -6,7 +6,8 @@ import {
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
-import { app } from "../../firebase/frebase.config";
+// Firebase Configuration Import
+import { app } from "../../firebase/firebase.config"; 
 import { axiosPublic } from "../Hook/useAxios";
 
 export const AuthContext = createContext(null);
@@ -19,33 +20,58 @@ const AuthProvider = ({ children }) => {
 
   const signIn = (email, password) => {
     setLoading(true);
-    return signInWithEmailAndPassword(auth, email, password);
+    return signInWithEmailAndPassword(auth, email, password)
+      .catch((error) => {
+        setLoading(false);
+        throw error;
+      });
   };
 
   const logOut = () => {
     setLoading(true);
-    return signOut(auth);
+    return signOut(auth)
+      .catch((error) => {
+        setLoading(false);
+        throw error;
+      });
   };
 
   const forgetPassword = (email) => {
     setLoading(true);
-    return sendPasswordResetEmail(auth, email);
+    return sendPasswordResetEmail(auth, email)
+      .catch((error) => {
+        setLoading(false);
+        throw error;
+      });
   };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setLoading(true);
+      console.log("AuthProvider: state changed", currentUser);
       setUser(currentUser);
+
       if (currentUser) {
+        // Get token and store client
         const userInfo = { email: currentUser.email };
-        axiosPublic.post("/jwt", userInfo).then((res) => {
-          if (res.data.token) {
-            console.log("hellooo")
-            localStorage.setItem("access-token", res.data.token);
+        axiosPublic.post("/jwt", userInfo)
+          .then((res) => {
+            if (res.data.token) {
+              localStorage.setItem("access-token", res.data.token);
+              setLoading(false);
+            } else {
+              setLoading(false);
+            }
+          })
+          .catch((error) => {
+            console.error("JWT token fetch failed", error);
+            // FIX 2: If backend fails, remove token and log out to prevent 
+            // the user from being stuck in a broken "logged in" state.
+            localStorage.removeItem("access-token");
+            signOut(auth); 
             setLoading(false);
-          }
-        });
+          });
       } else {
+        // User logged out
         localStorage.removeItem("access-token");
         setLoading(false);
       }

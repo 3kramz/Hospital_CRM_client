@@ -19,16 +19,25 @@ export default function Invoice() {
       });
   }, [groupId]);
 
+  /* Debug: Log ref status */
+  useEffect(() => {
+    console.log("InvoiceRef changed:", invoiceRef.current);
+  }, [invoiceData]);
+
   const handlePrint = useReactToPrint({
-  contentRef: invoiceRef,
-  documentTitle: invoiceData
-    ? `Invoice_${invoiceData.patientInfo.pid}`
-    : "Invoice",
-  // onBeforePrint: () => {
-  //   console.log("Invoice ref content:", invoiceRef.current);
-  //   console.log("Inner HTML:", invoiceRef.current?.innerHTML);
-  // }
-});
+    contentRef: invoiceRef,
+    documentTitle: invoiceData
+      ? `Invoice_${invoiceData.patientInfo.pid}`
+      : "Invoice",
+    onAfterPrint: () => console.log("Print finished"),
+    onBeforePrint: async () => {
+      console.log("Preparing to print. Ref:", invoiceRef.current);
+      if (invoiceRef.current) {
+        console.log("Ref innerHTML length:", invoiceRef.current.innerHTML.length);
+      }
+    },
+    onPrintError: (loc, err) => console.error("Print Error:", loc, err)
+  });
 
   if (!invoiceData) return <p>Loading Invoice...</p>;
 

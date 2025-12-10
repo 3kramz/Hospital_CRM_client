@@ -1,7 +1,21 @@
+import { useContext, useEffect } from "react";
+import { AuthContext } from "../../Providers/AuthProvider";
 import LoginForm from "./LoginForm";
+import { useNavigate } from "react-router-dom";
 
 
 const Login = () => {
+  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+
+
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard/patient-entry", { replace: true }); // replace prevents going back to login
+    }
+  }, [user, navigate]); // Dependencies ensure this runs only when user state changes
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row justify-center items-center  bg-[#213555] ">
       <div className="flex flex-col bg-[#3C738C]  h-28 w-64 md:h-[300px] md:w-96 justify-center items-center rounded-t-xl md:rounded-l-xl md:rounded-r-none">
