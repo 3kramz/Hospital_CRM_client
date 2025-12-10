@@ -5,12 +5,21 @@
     visibility: visible !important;
     background: white !important;
     color: black !important;
+    margin: 0 !important;
   }
   .print-container, .print-container * {
     visibility: visible !important;
   }
+  .print-container {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
   @page {
     size: auto;
-    margin: 15mm;
+    margin: 10mm;
   }
 }
