@@ -2,22 +2,80 @@
 @plugin "daisyui";
 
 :root {
-  --color-primary: #0B263D;
-  --color-secondary: #77B4E6;
-  --color-success: #22C55E;
-  --color-error: #dc3545;
-  --color-warning: #ffc107;
-  --color-info: #A8CFEF;
-  --color-muted: #6c757d;
-  --color-light: #f8f9fa;
-  --color-dark: #343a40;
-  --color-background: #0B263D;
-  --color-foreground: #77B4E6;
+  /* Modern Medical Tech Palette */
+  --color-primary: #0F172A;
+  /* Slate 900 - Deep, professional dark blue/black */
+  --color-secondary: #0EA5E9;
+  /* Sky 500 - Vibrant, clean cyan/blue */
+
+  --color-success: #10B981;
+  /* Emerald 500 */
+  --color-error: #EF4444;
+  /* Red 500 */
+  --color-warning: #F59E0B;
+  /* Amber 500 */
+  --color-info: #3B82F6;
+  /* Blue 500 */
+
+  --color-muted: #64748B;
+  /* Slate 500 */
+  --color-light: #F8FAFC;
+  /* Slate 50 */
+  --color-dark: #1E293B;
+  /* Slate 800 */
+
+  --color-background: #F1F5F9;
+  /* Slate 100 - Soft background for the whole app */
+  --color-foreground: #0F172A;
+  /* Slate 900 */
 }
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: 'Outfit', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Scrollbar for Webkit */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  /* Slate 300 */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+  /* Slate 400 */
+}
+
 .input {
   @apply border border-gray-300 rounded px-4 py-2 w-full;
 }
 
+@keyframes pulse-fast {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: .5;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-fast {
+  animation: pulse-fast 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
 
 @media print {
   body * {
@@ -54,10 +112,12 @@
   body * {
     visibility: hidden;
   }
+
   .print-area,
   .print-area * {
     visibility: visible;
   }
+
   .print-area {
     position: absolute;
     left: 0;

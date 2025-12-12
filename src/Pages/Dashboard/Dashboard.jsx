@@ -4,78 +4,208 @@ import {
   FiFileText,
   FiLock,
   FiUserCheck,
-  FiChevronLeft,
-  FiChevronRight,
+  FiMenu,
+  FiX,
+  FiGrid,
+  FiUserPlus
 } from "react-icons/fi";
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import useAuth from "../../Hook/useAuth";
-import { useState } from "react";
-
-const style =
-  "flex items-center gap-3 h-12 px-4 w-full text-left text-base font-medium hover:bg-primary hover:text-white rounded transition-all duration-200";
+import { useState, useEffect } from "react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { logOut } = useAuth();
-  const [collapsed, setCollapsed] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
 
-  const sidebarWidth = collapsed ? 80 : 260; // px
+  // Handle responsive sidebar behavior
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      if (mobile) setIsSidebarOpen(false);
+      else setIsSidebarOpen(true);
+    };
+
+    handleResize(); // Initial check
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Close sidebar on mobile when route changes
+  useEffect(() => {
+    if (isMobile) setIsSidebarOpen(false);
+  }, [location.pathname, isMobile]);
 
   const handleLogout = () => {
     logOut();
     navigate("/");
   };
 
+  const navItems = [
+    { to: "assign-test", icon: <FiGrid />, label: "Assign Tests" },
+    { to: "patient-entry", icon: <FiUserPlus />, label: "Reception" },
+    { to: "reports", icon: <FiFileText />, label: "Reports" },
+    { to: "settings", icon: <FiSettings />, label: "Settings" },
+    { to: "change-password", icon: <FiLock />, label: "Change Password" },
+  ];
+
+  // Global Keyboard Shortcuts
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      // Alt + Number to navigate
+      if (e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
+        const key = parseInt(e.key);
+        if (key >= 1 && key <= navItems.length) {
+          e.preventDefault();
+          const target = navItems[key - 1];
+          navigate(target.to);
+        }
+      }
+
+      // Ctrl + Backspace to Go Back
+      if ((e.ctrlKey || e.metaKey) && e.key === "Backspace") {
+        // Prevent navigating back if user is typing in an input (preserves Delete Word behavior)
+        const tag = e.target.tagName.toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || e.target.isContentEditable) return;
+
+        e.preventDefault();
+        navigate(-1);
+      }
+    };
+
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [navigate, navItems]);
+
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-primary text-white py-4 px-6 flex items-center justify-between shadow">
-        <h1 className="text-xl md:text-4xl font-bold">JAZEERA DIAGNOSTIC CENTER</h1>
-      </header>
+    <div className="min-h-screen bg-light font-outfit flex">
+      {/* Sidebar Overlay (Mobile) */}
+      {isMobile && isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm transition-opacity"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
 
-      {/* Sidebar Fixed */}
+      {/* Sidebar */}
       <aside
-        className="fixed top-16 left-0 h-[calc(100vh-64px)] bg-secondary text-primary shadow-md transition-all duration-300 overflow-hidden z-40"
-        style={{ width: `${sidebarWidth}px` }}
+        className={`
+          fixed lg:static inset-y-0 left-0 z-50
+          w-64 bg-white border-r border-gray-200 shadow-xl lg:shadow-none
+          transform transition-transform duration-300 ease-in-out
+          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0 lg:w-20"}
+          flex flex-col
+        `}
       >
-        <div className="flex flex-col pt-4 space-y-1 relative">
+        {/* Sidebar Header */}
+        <div className="h-20 flex items-center justify-center border-b border-gray-100 px-4">
+           {isSidebarOpen || isMobile ? (
+              <h1 className="text-xl font-bold bg-gradient-to-r from-secondary to-primary bg-clip-text text-transparent truncate tracking-tight">
+                JAZEERA CRM
+              </h1>
+           ) : (
+             <span className="text-2xl font-bold text-secondary">J</span>
+           )}
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 py-6 px-3 space-y-2 overflow-y-auto">
+          {navItems.map((item) => (
+            <SidebarItem
+              key={item.to}
+              to={item.to}
+              icon={item.icon}
+              label={item.label}
+              isCollapsed={!isSidebarOpen && !isMobile}
+              isActive={location.pathname.includes(item.to)}
+            />
+          ))}
+        </nav>
+
+        {/* Footer / Logout */}
+        <div className="p-4 border-t border-gray-100">
           <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="absolute right-2 top-4 bg-info p-1 rounded-full shadow"
+            onClick={handleLogout}
+            className={`
+              flex items-center gap-3 w-full px-4 py-3 text-red-500 rounded-xl hover:bg-red-50 transition-all
+              ${!isSidebarOpen && !isMobile ? "justify-center" : ""}
+            `}
           >
-            {collapsed ? <FiChevronRight /> : <FiChevronLeft />}
-          </button>
-
-          <SidebarItem to="assign-test" icon={<FiUserCheck />} label="TESTS" collapsed={collapsed} />
-          <SidebarItem to="patient-entry" icon={<FiUserCheck />} label="Reception" collapsed={collapsed} />
-          <SidebarItem to="reports" icon={<FiFileText />} label="Reports" collapsed={collapsed} />
-          <SidebarItem to="settings" icon={<FiSettings />} label="Settings" collapsed={collapsed} />
-          <SidebarItem to="change-password" icon={<FiLock />} label="Change Password" collapsed={collapsed} />
-
-          <button onClick={handleLogout} className={style}>
-            <FiLogOut /> {!collapsed && <span>Log out</span>}
+            <FiLogOut className="text-xl" />
+            {(isSidebarOpen || isMobile) && <span className="font-medium">Logout</span>}
           </button>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main
-        className="ml-0 transition-all duration-300 px-4 pt-6"
-        style={{ marginLeft: `${sidebarWidth}px` }}
-      >
-        <div className="pb-10">
+      {/* Main Content Wrapper */}
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+        {/* Top Header */}
+        <header className="h-20 bg-white border-b border-gray-200 px-6 flex items-center justify-between z-30">
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg lg:hidden"
+          >
+           <FiMenu className="text-2xl" />
+          </button>
+          
+          <button
+             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+             className="hidden lg:block p-2 text-gray-400 hover:text-primary transition-colors"
+          >
+             {isSidebarOpen ? <FiMenu className="text-xl transform rotate-180" /> : <FiMenu className="text-xl" />}
+          </button>
+      
+
+          <div className="flex items-center gap-4">
+            <div className="text-right hidden sm:block">
+              <p className="text-sm font-semibold text-gray-800">Admin User</p>
+              <p className="text-xs text-gray-500">Administrator</p>
+            </div>
+            <div className="w-10 h-10 bg-secondary/10 text-secondary rounded-full flex items-center justify-center font-bold text-lg">
+              A
+            </div>
+          </div>
+        </header>
+
+        {/* Main Scrollable Area */}
+        <main className="flex-1 overflow-auto bg-light p-4 md:p-6 lg:p-8">
           <Outlet />
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 };
 
-const SidebarItem = ({ to, icon, label, collapsed }) => {
+const SidebarItem = ({ to, icon, label, isCollapsed, isActive }) => {
   return (
-    <Link to={to} className={style}>
-      {icon}
-      {!collapsed && <span>{label}</span>}
+    <Link
+      to={to}
+      className={`
+        flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 group relative
+        ${isActive 
+          ? "bg-secondary text-white shadow-lg shadow-secondary/30" 
+          : "text-gray-500 hover:bg-gray-50 hover:text-primary"
+        }
+        ${isCollapsed ? "justify-center" : ""}
+      `}
+    >
+      <span className={`text-xl ${isActive ? "text-white" : "group-hover:scale-110 transition-transform"}`}>
+        {icon}
+      </span>
+      
+      {!isCollapsed && (
+        <span className="font-medium text-sm whitespace-nowrap">{label}</span>
+      )}
+      
+      {/* Tooltip for collapsed mode */}
+      {isCollapsed && (
+        <div className="absolute left-full ml-4 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
+          {label}
+        </div>
+      )}
     </Link>
   );
 };

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import useAxiosSecure from "../../../../Hook/useAxiosSecure";
 import { useNavigate } from "react-router-dom";
 import { FaSearch, FaFileInvoiceDollar, FaEye, FaChevronLeft, FaChevronRight, FaFilter } from "react-icons/fa";
+import HospitalLoader from "../../../../Components/Loading/HospitalLoader";
 
 const Reports = () => {
   const [reports, setReports] = useState([]);
@@ -178,10 +179,7 @@ const Reports = () => {
                  {loading ? (
                     <tr>
                       <td colSpan="8" className="px-6 py-10 text-center text-gray-500">
-                        <div className="flex flex-col items-center justify-center">
-                          <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-2"></div>
-                          <p>Loading reports...</p>
-                        </div>
+                        <HospitalLoader />
                       </td>
                     </tr>
                  ) : reports.length === 0 ? (

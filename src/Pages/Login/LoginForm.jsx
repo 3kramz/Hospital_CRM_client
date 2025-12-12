@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { FaLock, FaUser } from "react-icons/fa";
 import { AuthContext } from "../../Providers/AuthProvider";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import login_logo from "../../assests/logo/login_logo.svg";
+import HospitalLoader from "../../Components/Loading/HospitalLoader";
 
 const LoginForm = () => {
   const {
@@ -16,69 +16,67 @@ const LoginForm = () => {
   const { signIn, loading } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
-
+  
   const from = location.state?.from?.pathname || "/dashboard/assign-test";
 
   const onSubmit = (data) => {
-   signIn(data.email, data.password)
-            .then(result => {
-                const user = result.user;
-                console.log(user);
-                
-                navigate(from, { replace: true });
-            })
+    signIn(data.email, data.password).then((result) => {
+      const user = result.user;
+      console.log(user);
+
+      navigate(from, { replace: true });
+    });
   };
-if (loading) {
-  return (
-    <div className="flex justify-center items-center h-screen">
-      <div className="loader"></div>
-    </div>
-  );
-}
+
+
+// ...
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <HospitalLoader />
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full max-w-md p-8 rounded-lg shadow-md">
-      <div className="w-full flex justify-center items-center my-5">
-        <img src={login_logo} alt="Login Logo" className="w-10 mx-5" />
-        <h2 className="text-4xl font-bold text-center text-gray-800 ">LOGIN</h2>
+    <div className="w-full">
+      <div className="mb-10 text-center md:text-left">
+        <h2 className="text-3xl font-bold text-primary mb-2">Welcome Back</h2>
+        <p className="text-muted">Please enter your details to sign in.</p>
       </div>
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Email
+        <div className="form-control w-full">
+          <label className="label" htmlFor="email">
+            <span className="label-text font-medium text-dark">Email Address</span>
           </label>
           <div className="relative">
-            <div className=" pl-2 absolute inset-y-0 left-0 flex items-center pointer-events-none">
-              <FaUser className="text-slate-900" />
-            </div>
-            <input
-              id="email"
-              type="text"
-              {...register("email", { required: "email is required" })}
-              className={`${
-                errors.email ? "border-red-700" : "border-black"
-              } pl-10 bg-transparent border-b-1 border-t-0 border-x-0 rounded-none focus:ring-2 focus:ring-blue-500 focus:rounded-lg focus:outline-none w-full px-3 py-2  text-gray-700 `}
-              placeholder="Enter your email"
-            />
+             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted">
+                <FaUser />
+             </div>
+             <input
+                id="email"
+                type="email"
+                {...register("email", { required: "Email is required" })}
+                className={`input input-bordered w-full pl-10 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary ${
+                  errors.email ? "input-error" : ""
+                }`}
+                placeholder="Enter your email"
+              />
           </div>
           {errors.email && (
-            <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+            <span className="text-error text-sm mt-1">{errors.email.message}</span>
           )}
         </div>
 
-        <div>
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Password
+        <div className="form-control w-full">
+           <label className="label" htmlFor="password">
+            <span className="label-text font-medium text-dark">Password</span>
           </label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FaLock className="text-slate-900" />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted">
+               <FaLock />
             </div>
             <input
               id="password"
@@ -87,36 +85,37 @@ if (loading) {
                 required: "Password is required",
                 minLength: {
                   value: 6,
-                  message: "Password at least 6 characters",
+                  message: "Password must be at least 6 characters",
                 },
               })}
-              className={`${
-                errors.password ? "border-red-700" : "border-black"
-              } pl-10 bg-transparent border-b-1 border-t-0 border-x-0 rounded-none focus:ring-2 focus:ring-blue-500 focus:rounded-lg focus:outline-none w-full px-3 py-2  text-gray-700`}
+              className={`input input-bordered w-full pl-10 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary ${
+                errors.password ? "input-error" : ""
+              }`}
               placeholder="Enter your password"
             />
           </div>
           {errors.password && (
-            <p className="mt-1 text-sm text-red-600">
-              {errors.password.message}
-            </p>
+            <span className="text-error text-sm mt-1">{errors.password.message}</span>
           )}
         </div>
 
-        <div className="flex items-center justify-center">
-          <div className="text-sm">
-            <Link to="forget-password" className=" hover:text-blue-500">
-              Forgot password?
+        <div className="flex items-center justify-between">
+            {/* Placeholder for 'Remember me' if needed in future */}
+            <div></div> 
+            <Link
+                to="forget-password"
+                className="text-sm font-medium text-secondary hover:text-info transition-colors"
+             >
+                Forgot password?
             </Link>
-          </div>
         </div>
 
-        <div className="flex items-center justify-center">
+        <div>
           <button
             type="submit"
-            className=" flex justify-center items-center bg-[#8FB7C9] shadow-xl/20 shadow-slate-700 py-2 px-7 border border-slate-700 rounded-4xl    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="btn btn-primary w-full text-white uppercase tracking-wide hover:shadow-lg transition-all transform active:scale-95"
           >
-            <FaLock className="mr-2" /> SUBMIT
+             Sign In
           </button>
         </div>
       </form>
