@@ -1,13 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { axiosPublic } from "../../../../Hook/useAxios";
 import { useReactToPrint } from "react-to-print";
 import InvoiceContent from "./InvoiceContent";
 
 export default function Invoice() {
   const { groupId } = useParams();
+  const navigate = useNavigate();
   const [invoiceData, setInvoiceData] = useState(null);
   const invoiceRef = useRef(null);
+  const buttonContainerRef = useRef(null);
 
   useEffect(() => {
     if (!groupId) return;
@@ -18,6 +20,31 @@ export default function Invoice() {
         setInvoiceData(null);
       });
   }, [groupId]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+        // If clicking on invoice or buttons, do nothing
+        if (
+            (invoiceRef.current && invoiceRef.current.contains(event.target)) ||
+            (buttonContainerRef.current && buttonContainerRef.current.contains(event.target))
+        ) {
+            return;
+        }
+
+        // Logic to go back or to dashboard
+        if (window.history.state && window.history.state.idx > 0) {
+            navigate(-1);
+        } else {
+             navigate('/dashboard');
+        }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [navigate]);
+
 
   useEffect(() => {
     // console.log("InvoiceRef changed:", invoiceRef.current);
@@ -48,26 +75,30 @@ export default function Invoice() {
   if (!invoiceData) return <p>Loading Invoice...</p>;
 
   return (
-    <div className="p-4">
-      <button
-        onClick={handlePrint}
-        className="bg-green-600 text-white px-4 py-2 rounded mb-4 hover:bg-green-700 mr-2"
-      >
-        Print Now
-      </button>
-      <button
-        onClick={() => {
-           if (window.history.length > 1) {
-              window.history.back();
-           } else {
-              window.close();
-           }
-        }}
-        className="bg-red-500 text-white px-4 py-2 rounded mb-4 hover:bg-red-600"
-      >
-        Close
-      </button>
-      <InvoiceContent ref={invoiceRef} invoiceData={invoiceData} />
+    <div className="p-4 min-h-screen bg-gray-100 flex flex-col items-center">
+      <div ref={buttonContainerRef} className="w-full max-w-4xl flex justify-start mb-4">
+          <button
+            onClick={handlePrint}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 mr-2 shadow-sm"
+          >
+            Print Now
+          </button>
+          <button
+            onClick={() => {
+               if (window.history.length > 1) {
+                  window.history.back();
+               } else {
+                  window.close();
+               }
+            }}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 shadow-sm"
+          >
+            Close
+          </button>
+      </div>
+      <div className="w-full max-w-4xl shadow-lg bg-white">
+         <InvoiceContent ref={invoiceRef} invoiceData={invoiceData} />
+      </div>
     </div>
   );
 }

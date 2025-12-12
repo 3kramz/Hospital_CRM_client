@@ -13,6 +13,7 @@ const InvoiceContent = forwardRef(({ invoiceData }, ref) => {
     pid,
     createdAt,
     _id,
+    invoiceId,
   } = invoiceData;
 
   const testTotal = tests.reduce((sum, t) => sum + t.price, 0);
@@ -80,7 +81,7 @@ const InvoiceContent = forwardRef(({ invoiceData }, ref) => {
           <div className="text-sm space-y-2 print:space-y-1">
              <div className="flex justify-end gap-4">
                <span className="text-gray-500 font-medium">Invoice ID:</span>
-               <span className="font-mono font-bold text-gray-700">#{_id.slice(-6).toUpperCase()}</span>
+               <span className="font-mono font-bold text-gray-700">#{invoiceId || _id.slice(-6).toUpperCase()}</span>
              </div>
              <div className="flex justify-end gap-4">
                <span className="text-gray-500 font-medium">Date:</span>

@@ -1,15 +1,20 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import useAxiosSecure from "../../../../Hook/useAxiosSecure";
-import { useNavigate } from "react-router-dom";
-import { FaSearch, FaFileInvoiceDollar, FaEye, FaFilter } from "react-icons/fa";
+import { useNavigate, useLocation } from "react-router-dom";
+import { FaSearch, FaFileInvoiceDollar, FaEye, FaFilter, FaSpinner, FaSort, FaVials, FaClipboardList, FaCheckCircle, FaFlask } from "react-icons/fa";
+import { FiCheckCircle } from "react-icons/fi";
 import HospitalLoader from "../../../../Components/Loading/HospitalLoader";
 
 const Reports = () => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [paymentFilter, setPaymentFilter] = useState("");
+  // Filters
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState(""); // Maps to backend 'status'
+  const [testStatusFilter, setTestStatusFilter] = useState(""); // Maps to backend 'testStatus'
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  
   const [sortField, setSortField] = useState("");
   const [sortOrder, setSortOrder] = useState("desc");
   const [totalCount, setTotalCount] = useState(0);
@@ -18,6 +23,7 @@ const Reports = () => {
   
   const pageSize = 20;
   const navigate = useNavigate();
+  const location = useLocation();
   const axiosSecure = useAxiosSecure();
 
   const observer = useRef();
@@ -37,17 +43,16 @@ const Reports = () => {
   useEffect(() => {
     setLoading(true);
     
+    // Note: backend expects 'status' for payment status (Paid/Due) and 'testStatus' for test status.
     const delayDebounceFn = setTimeout(() => {
       axiosSecure
-        .get(`/save-patient-bill/all-reports?page=${currentPage}&limit=${pageSize}&search=${searchText}&status=${statusFilter}&payment=${paymentFilter}&sort=${sortField}&order=${sortOrder}`)
+        .get(`/save-patient-bill/all-reports?page=${currentPage}&limit=${pageSize}&search=${searchText}&status=${paymentStatusFilter}&testStatus=${testStatusFilter}&sort=${sortField}&order=${sortOrder}&startDate=${startDate}&endDate=${endDate}`)
         .then((res) => {
           const newReports = res.data.reports || [];
           const totalPages = res.data.totalPages || 1;
           
           setReports(prev => {
-            // If it's the first page, replace content. Otherwise append.
             if (currentPage === 1) return newReports;
-            // Filter duplicates just in case, though ID check is expensive on large arrays so relying on page logic usually fine
              return [...prev, ...newReports];
           });
           
@@ -62,25 +67,38 @@ const Reports = () => {
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [axiosSecure, currentPage, searchText, statusFilter, paymentFilter, sortField, sortOrder]);
+  }, [axiosSecure, currentPage, searchText, paymentStatusFilter, testStatusFilter, sortField, sortOrder, startDate, endDate]);
+
+  const [stats, setStats] = useState({
+    totalTests: 0,
+    totalCompleted: 0,
+    totalRunning: 0,
+    totalAssigned: 0
+  });
+
+  useEffect(() => {
+    axiosSecure.get('/save-patient-bill/stats')
+      .then(res => setStats(res.data))
+      .catch(err => console.error("Failed to fetch stats:", err));
+  }, [axiosSecure]);
 
 
   const handleSearchChange = (e) => {
       setSearchText(e.target.value);
-      setReports([]); // Optional: clear current view
+      setReports([]); 
       setCurrentPage(1);
       setHasMore(true);
   };
 
-  const handleStatusChange = (e) => {
-      setStatusFilter(e.target.value);
+  const handlePaymentStatusChange = (e) => {
+      setPaymentStatusFilter(e.target.value);
       setReports([]); 
       setCurrentPage(1);
       setHasMore(true);
   };
     
-  const handlePaymentChange = (e) => {
-      setPaymentFilter(e.target.value);
+  const handleTestStatusChange = (e) => {
+      setTestStatusFilter(e.target.value);
        setReports([]); 
       setCurrentPage(1);
       setHasMore(true);
@@ -95,9 +113,17 @@ const Reports = () => {
     setHasMore(true);
   };
 
+  const handleStatClick = (status) => {
+     setTestStatusFilter(status);
+     setReports([]);
+     setCurrentPage(1);
+     setHasMore(true);
+  }
+
   const highlightText = (text) => {
     if (!searchText) return text;
-    const regex = new RegExp(`(${searchText})`, "gi");
+    const escapeRegex = (string) => string.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+    const regex = new RegExp(`(${escapeRegex(searchText)})`, "gi");
     const parts = String(text).split(regex);
     return parts.map((part, idx) =>
       regex.test(part) ? (
@@ -109,93 +135,229 @@ const Reports = () => {
       )
     );
   };
-  
-  const startIndex = (currentPage - 1) * pageSize; // Only vaguely accurate for infinite scroll if we tracked 'loaded so far', but for row number we can just use index
+
+  const getStatusColor = (status) => {
+    switch (String(status).toLowerCase()) {
+      case "paid":
+        return "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-600/20";
+      case "due":
+      case "unpaid":
+        return "bg-rose-100 text-rose-700 ring-1 ring-rose-600/20";
+      default:
+        return "bg-gray-100 text-gray-700 ring-1 ring-gray-600/20";
+    }
+  };
+
+  /* Helper to render status with icons */
+  const renderTestStatus = (status) => {
+    const normalizedStatus = String(status || "Assigned").toLowerCase();
+
+    if (normalizedStatus === "complete") {
+      return (
+        <span className="text-emerald-600 font-medium text-sm flex items-center justify-center gap-1.5 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100/50">
+          <FiCheckCircle className="text-base" /> Done
+        </span>
+      );
+    } else if (normalizedStatus === "running") {
+      return (
+        <span className="text-purple-600 font-medium text-sm flex items-center justify-center gap-1.5 bg-purple-50 px-3 py-1 rounded-full border border-purple-100/50">
+           <FaSpinner className="animate-spin text-base" /> Running
+        </span>
+      );
+    } else {
+      // Assigned or others
+      return (
+        <span className="text-amber-600 font-medium text-sm flex items-center justify-center gap-1.5 bg-amber-50 px-3 py-1 rounded-full border border-amber-100/50">
+           <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> Assigned
+        </span>
+      );
+    }
+  };
 
   return (
-    <div className="bg-gray-50 min-h-screen p-6 font-sans">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="bg-gray-50/50 min-h-screen p-6 font-outfit">
+      <div className="max-w-7xl mx-auto space-y-8">
         
-        {/* Page Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800 tracking-tight flex items-center gap-3">
-              <FaFileInvoiceDollar className="text-blue-600" />
-              Diagnostic Reports
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
+              <span className="flex items-center gap-3 text-gray-900">
+                <div className="p-3 bg-white rounded-xl shadow-sm border border-gray-100">
+                   <FaFileInvoiceDollar className="text-blue-600 text-xl" />
+                </div>
+                Diagnostic Reports
+              </span>
             </h1>
-            <p className="text-gray-500 mt-1">Manage and view patient diagnostic reports and invoices.</p>
+            <p className="text-gray-500 text-sm ml-16">
+              Manage patient reports, invoices, and payment statuses efficiently.
+            </p>
           </div>
-          <div className="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
-             <span className="text-gray-500 text-sm font-medium uppercase tracking-wider">Total Reports</span>
-             <div className="text-2xl font-bold text-gray-800">{totalCount}</div>
+
+          <div className="bg-white/80 backdrop-blur-sm px-6 py-3 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 group hover:shadow-md transition-all duration-300">
+             <div className="p-2 bg-blue-50 text-blue-600 rounded-lg group-hover:scale-110 transition-transform">
+                <FaFileInvoiceDollar />
+             </div>
+             <div>
+               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Reports</p>
+               <p className="text-2xl font-bold text-gray-900">{totalCount}</p>
+             </div>
           </div>
         </div>
+        
+        {/* Stats Section with Modern UI */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+             {/* Total Tests */}
+             <div 
+                onClick={() => handleStatClick("")}
+                className={`relative overflow-hidden bg-white p-5 rounded-2xl shadow-sm border transition-all duration-300 cursor-pointer group hover:-translate-y-1 hover:shadow-lg ${testStatusFilter === "" ? 'ring-2 ring-blue-500 border-blue-500' : 'border-gray-100 hover:border-blue-200'}`}
+             >
+                <div className="flex items-center justify-between z-10 relative">
+                   <div>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Tests</p>
+                      <h3 className="text-3xl font-extrabold text-gray-800">{stats.totalTests}</h3>
+                   </div>
+                   <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-sm">
+                      <FaVials className="text-xl" />
+                   </div>
+                </div>
+                <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-blue-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
+             </div>
 
-        {/* Filters & Actions Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 transition-all hover:shadow-md">
-           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+             {/* Running Tests */}
+             <div 
+                onClick={() => handleStatClick("Running")}
+                className={`relative overflow-hidden bg-white p-5 rounded-2xl shadow-sm border transition-all duration-300 cursor-pointer group hover:-translate-y-1 hover:shadow-lg ${testStatusFilter === "Running" ? 'ring-2 ring-purple-500 border-purple-500' : 'border-gray-100 hover:border-purple-200'}`}
+             >
+                <div className="flex items-center justify-between z-10 relative">
+                   <div>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Running</p>
+                      <h3 className="text-3xl font-extrabold text-gray-800">{stats.totalRunning}</h3>
+                   </div>
+                   <div className="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-sm">
+                      <FaFlask className="text-xl group-hover:animate-pulse" />
+                   </div>
+                </div>
+                <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-purple-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
+             </div>
+
+             {/* Assigned Tests */}
+             <div 
+                onClick={() => handleStatClick("Assigned")}
+                className={`relative overflow-hidden bg-white p-5 rounded-2xl shadow-sm border transition-all duration-300 cursor-pointer group hover:-translate-y-1 hover:shadow-lg ${testStatusFilter === "Assigned" ? 'ring-2 ring-amber-500 border-amber-500' : 'border-gray-100 hover:border-amber-200'}`}
+             >
+                <div className="flex items-center justify-between z-10 relative">
+                   <div>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Assigned</p>
+                      <h3 className="text-3xl font-extrabold text-gray-800">{stats.totalAssigned}</h3>
+                   </div>
+                   <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-sm">
+                      <FaClipboardList className="text-xl" />
+                   </div>
+                </div>
+                 <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-amber-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
+             </div>
+
+             {/* Completed Tests */}
+             <div 
+                onClick={() => handleStatClick("Complete")}
+                className={`relative overflow-hidden bg-white p-5 rounded-2xl shadow-sm border transition-all duration-300 cursor-pointer group hover:-translate-y-1 hover:shadow-lg ${testStatusFilter === "Complete" ? 'ring-2 ring-emerald-500 border-emerald-500' : 'border-gray-100 hover:border-emerald-200'}`}
+             >
+                <div className="flex items-center justify-between z-10 relative">
+                   <div>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Completed</p>
+                      <h3 className="text-3xl font-extrabold text-gray-800">{stats.totalCompleted}</h3>
+                   </div>
+                   <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-sm">
+                      <FaCheckCircle className="text-xl" />
+                   </div>
+                </div>
+                <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-emerald-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
+             </div>
+        </div>
+
+        {/* Filters & Actions */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-1">
+           <div className="flex flex-col md:flex-row gap-2 p-2">
               {/* Search */}
-              <div className="relative w-full md:w-96">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaSearch className="text-gray-400" />
+              <div className="relative flex-1">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <FaSearch className="text-gray-300 transition-colors group-focus-within:text-blue-500" />
                 </div>
                 <input
                   type="text"
-                  placeholder="Search by Name, Contact, PID..."
+                  placeholder="Search patients, invoices..."
                   value={searchText}
                   onChange={handleSearchChange}
-                  className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out sm:text-sm"
+                  className="block w-full pl-11 pr-4 py-3 bg-gray-50 border-transparent focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl transition-all duration-200 placeholder-gray-400 font-medium"
                 />
               </div>
 
               {/* Filters */}
-              <div className="flex gap-3 w-full md:w-auto">
-                 <div className="relative w-full md:w-40">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                       <FaFilter className="text-gray-400 text-xs" />
-                    </div>
+              <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
+                  
+                  {/* Date Range Start */}
+                  <div className="relative min-w-[150px]">
+                      <input 
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => {
+                            setStartDate(e.target.value);
+                            setReports([]);
+                            setCurrentPage(1);
+                            setHasMore(true);
+                        }}
+                        className="w-full pl-4 pr-4 py-3 bg-gray-50 border-transparent hover:bg-gray-100 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl transition-all duration-200 font-medium text-gray-600 cursor-pointer placeholder-gray-400"
+                        placeholder="From Date"
+                      />
+                  </div>
+
+                  {/* Date Range End */}
+                  <div className="relative min-w-[150px]">
+                      <input 
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => {
+                            setEndDate(e.target.value);
+                            setReports([]);
+                            setCurrentPage(1);
+                            setHasMore(true);
+                        }}
+                        className="w-full pl-4 pr-4 py-3 bg-gray-50 border-transparent hover:bg-gray-100 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl transition-all duration-200 font-medium text-gray-600 cursor-pointer placeholder-gray-400"
+                        placeholder="To Date"
+                      />
+                  </div>
+                  
+                 {/* Payment Status Filter */}
+                 <div className="relative min-w-[160px]">
                     <select
-                      value={statusFilter}
-                      onChange={handleStatusChange}
-                      className="block w-full pl-9 pr-8 py-2.5 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none cursor-pointer hover:bg-white transition-colors"
+                      value={paymentStatusFilter}
+                      onChange={handlePaymentStatusChange}
+                      className="appearance-none w-full pl-4 pr-10 py-3 bg-gray-50 border-transparent hover:bg-gray-100 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl transition-all duration-200 font-medium text-gray-600 cursor-pointer"
                     >
-                      <option value="">All Status</option>
-                      <option value="paid">Paid</option>
-                      <option value="due">Due</option>
+                      <option value="">All Payments</option>
+                      <option value="Paid">Paid</option>
+                      <option value="Due">Due</option>
                     </select>
-                 </div>
-                 <div className="relative w-full md:w-40">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                       <FaFilter className="text-gray-400 text-xs" />
-                    </div>
-                    <select
-                      value={paymentFilter}
-                      onChange={handlePaymentChange}
-                      className="block w-full pl-9 pr-8 py-2.5 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none cursor-pointer hover:bg-white transition-colors"
-                    >
-                      <option value="">All Payment</option>
-                      <option value="paid">Paid</option>
-                      <option value="unpaid">Unpaid</option>
-                    </select>
+                    <FaFilter className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs" />
                  </div>
               </div>
            </div>
         </div>
 
-        {/* Table Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        {/* Content Area */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="overflow-x-auto">
-             <table className="min-w-full divide-y divide-gray-200">
-               <thead className="bg-gray-50">
-                 <tr>
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50/50">
+                <tr>
                    {[
                      { label: "#", field: "serial", align: "center" },
                      { label: "Invoice ID", field: "invoiceId", align: "left" },
-                     { label: "Patient ID", field: "patientId", align: "left" },
-                     { label: "Name", field: "patientName", align: "left" },
-                     { label: "Total Due", field: "totalDue", align: "right" },
-                     { label: "Payment", field: "payment", align: "center" },
-                     { label: "Status", field: "status", align: "center" },
+                     { label: "Patient", field: "patientName", align: "left" },
+                     { label: "Payment", field: "status", align: "center" },
+                     { label: "Test Status", field: "testStatus", align: "center" },
+                     { label: "Date", field: "createdAt", align: "center" },
                      { label: "Action", field: "", align: "center" },
                    ].map(({ label, field, align }) => (
                      <th
@@ -207,94 +369,123 @@ const Reports = () => {
                        <div className={`flex items-center ${align === 'center' ? 'justify-center' : align === 'right' ? 'justify-end' : 'justify-start'} gap-1`}>
                          {label}
                          {sortField === field && (
-                           <span className="text-gray-400">{sortOrder === "asc" ? "▲" : "▼"}</span>
+                           <span className="text-blue-500">{sortOrder === "asc" ? "▲" : "▼"}</span>
                          )}
                        </div>
                      </th>
                    ))}
-                 </tr>
-               </thead>
-               <tbody className="bg-white divide-y divide-gray-200">
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
                  {/* Empty State */}
                  {!loading && reports.length === 0 && (
                     <tr>
-                      <td colSpan="8" className="px-6 py-10 text-center text-gray-500 italic">No reports found matching your criteria.</td>
+                       <td colSpan="7" className="px-6 py-20 text-center">
+                          <div className="flex flex-col items-center justify-center gap-3">
+                             <div className="p-3 bg-gray-50 rounded-full text-gray-300">
+                                <FaSearch className="text-xl" />
+                             </div>
+                             <p className="text-gray-500 font-medium">No reports found</p>
+                          </div>
+                       </td>
                     </tr>
                  )}
-                 
-                 {/* Data Rows */}
+
                  {reports.map((rpt, idx) => {
-                     // Check if this is the last element
-                     const isLastElement = reports.length === idx + 1;
-                     
-                     return (
-                     <tr 
-                        key={`${rpt.id}-${idx}`} // Using both checks uniqueness
+                    const isLastElement = reports.length === idx + 1;
+                    return (
+                      <tr 
+                        key={`${rpt._id}-${idx}`}
                         ref={isLastElement ? lastReportElementRef : null}
-                        className="hover:bg-blue-50/30 transition-colors duration-150 group"
-                     >
-                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                         {idx + 1}
-                       </td>
-                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                         {highlightText(rpt.invoiceId)}
-                       </td>
-                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                         {highlightText(rpt.patientId)}
-                       </td>
-                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                         {highlightText(rpt.patientName)}
-                       </td>
-                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-mono">
-                         {rpt.totalDue?.toFixed(2)}
-                       </td>
-                       <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
-                             ${String(rpt.payment > 0 ? "Paid" : "Unpaid").toLowerCase() === "paid" 
-                               ? "bg-green-100 text-green-800" 
-                               : "bg-gray-100 text-gray-600"}`}>
-                             {rpt.payment > 0 ? "Partial/Full" : "Unpaid"} ({rpt.payment})
-                          </span>
-                       </td>
-                       <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
-                             ${String(rpt.status || "").toLowerCase() === "paid"
-                               ? "bg-green-100 text-green-800 border border-green-200"
-                               : "bg-red-100 text-red-800 border border-red-200"}`}>
-                             {rpt.status}
-                          </span>
-                       </td>
-                       <td className="px-6 py-4 whitespace-nowrap text-center">
-                         <button 
-                           onClick={() => navigate(`/invoice/${rpt._id}`)}
-                           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 text-xs font-medium rounded-lg hover:bg-blue-100 transition-colors active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
-                         >
-                           <FaEye /> View
-                         </button>
-                       </td>
-                     </tr>
-                   );
+                        className="hover:bg-gray-50/50 transition-colors group"
+                      >
+                         {/* Serial */}
+                         <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                            {idx + 1}
+                         </td>
+
+                         {/* Invoice ID - REMOVED BORDER/BG per request */}
+                         <td className="px-6 py-4 whitespace-nowrap">
+                            <span 
+                              onClick={() => navigate(`/invoice/${rpt._id}`)}
+                              className="font-mono text-sm font-medium text-gray-600 hover:text-blue-600 cursor-pointer hover:underline transition-all"
+                            >
+                               {highlightText(rpt.invoiceId)}
+                            </span>
+                         </td>
+
+                         {/* Patient - REMOVED AVATAR per request */}
+                         <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex flex-col cursor-pointer group/patient" onClick={() => navigate(`/patient-history/${rpt.patientId}`, { state: { from: location } })}>
+                               <span className="text-sm font-medium text-gray-900 group-hover/patient:text-blue-600 transition-colors">
+                                  {highlightText(rpt.patientName)}
+                               </span>
+                               <span className="text-xs text-gray-400">
+                                  {highlightText(rpt.patientId)}
+                               </span>
+                            </div>
+                         </td>
+
+                         {/* Payment Status */}
+                         <td className="px-6 py-4 whitespace-nowrap text-center">
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${getStatusColor(rpt.status)}`}>
+                               {rpt.status}
+                            </span>
+                         </td>
+
+                         {/* Test Status */}
+                         <td className="px-6 py-4 whitespace-nowrap text-center">
+                            {renderTestStatus(rpt.testStatus)}
+                         </td>
+                         
+                         {/* Date & Time */}
+                         <td className="px-6 py-4 whitespace-nowrap text-center">
+                            <div className="flex flex-col">
+                               <span className="text-sm font-medium text-gray-700">
+                                  {new Date(rpt.createdAt).toLocaleDateString()}
+                               </span>
+                               <span className="text-xs text-gray-400">
+                                  {new Date(rpt.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                               </span>
+                            </div>
+                         </td>
+
+                         {/* Actions */}
+                         <td className="px-6 py-4 whitespace-nowrap text-center">
+                            <button 
+                              onClick={(e) => {
+                                 e.stopPropagation();
+                                 navigate(`/invoice/${rpt._id}`);
+                              }}
+                              className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-100 transition-all"
+                              title="View Report"
+                            >
+                              <FaEye />
+                            </button>
+                         </td>
+                      </tr>
+                    );
                  })}
-                 
-                 {/* Loading Indicator for Infinite Scroll */}
-                 {loading && (
+
+                  {/* Loading Indicator */}
+                  {loading && (
                     <tr>
-                      <td colSpan="8" className="px-6 py-6 transition-all">
-                        <div className="flex flex-col items-center justify-center gap-2 text-gray-400">
-                           <HospitalLoader />
-                           <span className="text-xs font-medium uppercase tracking-wider">Loading more reports...</span>
+                      <td colSpan="7" className="px-6 py-6 transition-all bg-gray-50/30">
+                        <div className="flex justify-center gap-2 items-center text-gray-400">
+                           <HospitalLoader size="sm" />
+                           <span className="text-xs font-medium uppercase tracking-wider">Loading...</span>
                         </div>
                       </td>
                     </tr>
                  )}
-               </tbody>
-             </table>
+              </tbody>
+            </table>
           </div>
           
-          {/* Bottom Summary / No More Data */}
+          {/* Footer message */}
           {!hasMore && reports.length > 0 && !loading && (
-             <div className="bg-gray-50 px-6 py-4 text-center text-sm text-gray-500 border-t border-gray-200">
-                You have reached the end of the list.
+             <div className="bg-gray-50 border-t border-gray-100 px-6 py-3 text-center text-xs text-gray-400 font-medium uppercase tracking-widest">
+                End of List
              </div>
           )}
         </div>

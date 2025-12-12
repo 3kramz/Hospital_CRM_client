@@ -5,6 +5,7 @@ import useAxiosSecure from "../../../../Hook/useAxiosSecure";
 import HospitalLoader from "../../../../Components/Loading/HospitalLoader";
 import Swal from 'sweetalert2';
 import { FiActivity, FiCheckCircle, FiClock, FiPlay, FiSearch, FiFileText, FiFile } from 'react-icons/fi';
+import { FaFlask } from 'react-icons/fa';
 import testMasterData from "../../../../lab_test_master_expanded.json";
 
 const LabBoard = () => {
@@ -171,12 +172,21 @@ const LabBoard = () => {
                                             </button>
                                         )}
                                         {actionType === 'running' && (
-                                            <button 
-                                                onClick={() => handleStatusUpdate(item, 'complete')}
-                                                className="btn btn-sm btn-success text-white shadow-sm shadow-success/30"
-                                            >
-                                                <FiCheckCircle /> Complete
-                                            </button>
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-1.5 px-3 py-1 bg-purple-50 rounded-full border border-purple-100">
+                                                    <div className="relative">
+                                                        <FaFlask className="text-purple-600 animate-bounce text-sm" />
+                                                        <span className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-purple-400 rounded-full animate-ping"></span>
+                                                    </div>
+                                                    <span className="text-xs font-semibold text-purple-700 animate-pulse">Running...</span>
+                                                </div>
+                                                <button 
+                                                    onClick={() => handleStatusUpdate(item, 'complete')}
+                                                    className="btn btn-sm btn-success text-white shadow-sm shadow-success/30"
+                                                >
+                                                    <FiCheckCircle /> Complete
+                                                </button>
+                                            </div>
                                         )}
                                          {actionType === 'completed' && (
                                             <span className="text-success font-medium text-sm flex items-center justify-end gap-1 px-3 py-1">

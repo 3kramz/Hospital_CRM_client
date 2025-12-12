@@ -1,14 +1,22 @@
 import { useState, useEffect } from "react";
 import useAxiosSecure from "../../../../Hook/useAxiosSecure";
-import { FiCalendar, FiUser, FiInfo, FiX } from "react-icons/fi";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { FiCalendar, FiUser, FiInfo, FiX, FiArrowLeft } from "react-icons/fi";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 
 const PublicPatientHistory = () => {
   const { pid } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const axiosSecure = useAxiosSecure();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Determine back path: use state if available, else default to lab-board
+  const backPath = location.state?.from?.pathname || "/dashboard/lab-board";
+
+  const handleClose = () => {
+      navigate(backPath);
+  };
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -37,6 +45,7 @@ const PublicPatientHistory = () => {
      return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 text-error font-medium">
            Patient not found or error loading data.
+           <button onClick={handleClose} className="btn btn-sm btn-outline ml-4">Go Back</button>
         </div>
      );
   }
@@ -44,7 +53,7 @@ const PublicPatientHistory = () => {
   return (
     <div 
       className="min-h-screen bg-gray-100 py-10 px-4 cursor-pointer"
-      onClick={() => navigate('/dashboard/lab-board')}
+      onClick={handleClose}
       title="Click outside to close"
     >
        <div 
@@ -53,13 +62,13 @@ const PublicPatientHistory = () => {
        >
           {/* Header */}
           <div className="bg-primary p-8 text-white text-center relative">
-             <Link 
-               to="/dashboard/lab-board" 
+             <button 
+               onClick={handleClose}
                className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors text-white"
-               title="Close and Return to Lab Board"
+               title="Close"
              >
                 <FiX className="text-xl" />
-             </Link>
+             </button>
              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
                 <FiUser />
              </div>
