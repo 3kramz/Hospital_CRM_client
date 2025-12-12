@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import Main from "../Layout/Main";
 import NotFound from "../Pages/NotFound/NotFound";
 import Login from "../Pages/Login/Login";
@@ -12,6 +12,7 @@ import AssignTest from "../Pages/Dashboard/Privateuser/AssignTest/AssignTest";
 import Invoice from "../Pages/Dashboard/Privateuser/Invoice/Invoice";
 import Reports from "../Pages/Dashboard/Privateuser/Reports/Reports";
 import Settings from "../Pages/Dashboard/Privateuser/Settings/Settings";
+import AdminRoute from "./AdminRoute";
 
 
 export const router = createBrowserRouter([
@@ -32,6 +33,10 @@ export const router = createBrowserRouter([
         ),
         children: [
           {
+            index: true,
+            element: <Navigate to="assign-test" replace />,
+          },
+          {
             path: "patient-entry",
             element: <PatientEntry />,
           },
@@ -45,7 +50,11 @@ export const router = createBrowserRouter([
           },
           {
             path: "settings",
-            element: <Settings />,
+            element: (
+              <AdminRoute>
+                <Settings />
+              </AdminRoute>
+            ),
           },
         ],
       },

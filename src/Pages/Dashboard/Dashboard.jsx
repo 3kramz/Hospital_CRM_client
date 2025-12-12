@@ -11,12 +11,16 @@ import {
 } from "react-icons/fi";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import useAuth from "../../Hook/useAuth";
+import useAdmin from "../../Hook/useAdmin";
+import useUser from "../../Hook/useUser";
 import { useState, useEffect } from "react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logOut } = useAuth();
+  const [isAdmin] = useAdmin();
+  const [userData] = useUser();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -48,9 +52,11 @@ const Dashboard = () => {
     { to: "assign-test", icon: <FiGrid />, label: "Assign Tests" },
     { to: "patient-entry", icon: <FiUserPlus />, label: "Reception" },
     { to: "reports", icon: <FiFileText />, label: "Reports" },
-    { to: "settings", icon: <FiSettings />, label: "Settings" },
-    { to: "change-password", icon: <FiLock />, label: "Change Password" },
   ];
+
+  if (isAdmin) {
+    navItems.push({ to: "settings", icon: <FiSettings />, label: "Settings" });
+  }
 
   // Global Keyboard Shortcuts
   useEffect(() => {
@@ -161,12 +167,25 @@ const Dashboard = () => {
 
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-semibold text-gray-800">Admin User</p>
-              <p className="text-xs text-gray-500">Administrator</p>
+              <p className="text-sm font-semibold text-gray-800">
+                {userData?.name || "User"}
+              </p>
+              <p className="text-xs text-gray-500 uppercase">
+                {userData?.role || "Member"}
+              </p>
             </div>
-            <div className="w-10 h-10 bg-secondary/10 text-secondary rounded-full flex items-center justify-center font-bold text-lg">
-              A
-            </div>
+            
+            {userData?.photo ? (
+                 <img 
+                    src={userData.photo} 
+                    alt="Profile" 
+                    className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                 />
+            ) : (
+                <div className="w-10 h-10 bg-secondary/10 text-secondary rounded-full flex items-center justify-center font-bold text-lg uppercase">
+                  {userData?.name ? userData.name.charAt(0) : "U"}
+                </div>
+            )}
           </div>
         </header>
 
