@@ -41,12 +41,10 @@ const Reports = () => {
   }, [axiosSecure, currentPage, searchText, statusFilter, paymentFilter]);
 
   const handleSort = (field) => {
-    // Server-side sorting not yet implemented
     setSortField(field);
     setSortOrder(sortOrder === "asc" ? "desc" : "asc");
   };
 
-  // Function to highlight search text
   const highlightText = (text) => {
     if (!searchText) return text;
     const regex = new RegExp(`(${searchText})`, "gi");
@@ -251,8 +249,7 @@ const Reports = () => {
               </button>
 
               <div className="hidden sm:flex gap-1">
-                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                    // Simple pagination logic to avoid too many buttons
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
                     if (totalPages > 7 && Math.abs(page - currentPage) > 2 && page !== 1 && page !== totalPages) {
                        if (Math.abs(page - currentPage) === 3) return <span key={page} className="px-2 py-1">...</span>;
                        return null;

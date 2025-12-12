@@ -11,6 +11,7 @@ import PatientEntry from "../Pages/Dashboard/Privateuser/PatientEntry/PatientEnt
 import AssignTest from "../Pages/Dashboard/Privateuser/AssignTest/AssignTest";
 import Invoice from "../Pages/Dashboard/Privateuser/Invoice/Invoice";
 import Reports from "../Pages/Dashboard/Privateuser/Reports/Reports";
+import Settings from "../Pages/Dashboard/Privateuser/Settings/Settings";
 
 
 export const router = createBrowserRouter([
@@ -41,6 +42,10 @@ export const router = createBrowserRouter([
           {
             path: "reports",
             element: <Reports />,
+          },
+          {
+            path: "settings",
+            element: <Settings />,
           },
         ],
       },

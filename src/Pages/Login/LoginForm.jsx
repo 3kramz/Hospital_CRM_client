@@ -22,14 +22,13 @@ const LoginForm = () => {
   const onSubmit = (data) => {
     signIn(data.email, data.password).then((result) => {
       const user = result.user;
-      console.log(user);
 
       navigate(from, { replace: true });
     });
   };
 
 
-// ...
+
 
   if (loading) {
     return (
@@ -100,7 +99,6 @@ const LoginForm = () => {
         </div>
 
         <div className="flex items-center justify-between">
-            {/* Placeholder for 'Remember me' if needed in future */}
             <div></div> 
             <Link
                 to="forget-password"

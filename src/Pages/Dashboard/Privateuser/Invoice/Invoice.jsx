@@ -19,9 +19,8 @@ export default function Invoice() {
       });
   }, [groupId]);
 
-  /* Debug: Log ref status */
   useEffect(() => {
-    console.log("InvoiceRef changed:", invoiceRef.current);
+    // console.log("InvoiceRef changed:", invoiceRef.current);
   }, [invoiceData]);
 
   const handlePrint = useReactToPrint({
@@ -29,13 +28,8 @@ export default function Invoice() {
     documentTitle: invoiceData
       ? `Invoice_${invoiceData.patientInfo.pid}`
       : "Invoice",
-    onAfterPrint: () => console.log("Print finished"),
-    onBeforePrint: async () => {
-      console.log("Preparing to print. Ref:", invoiceRef.current);
-      if (invoiceRef.current) {
-        console.log("Ref innerHTML length:", invoiceRef.current.innerHTML.length);
-      }
-    },
+    onAfterPrint: () => {},
+    onBeforePrint: async () => {},
     onPrintError: (loc, err) => console.error("Print Error:", loc, err)
   });
 

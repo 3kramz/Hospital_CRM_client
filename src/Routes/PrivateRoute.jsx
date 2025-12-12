@@ -8,7 +8,6 @@ const PrivateRoute = ({ children }) => {
   const location = useLocation();
 
   if (loading) {
-    console.log("PrivateRoute: loading...");
     return (
       <div className="flex justify-center items-center h-screen bg-background">
         <HospitalLoader />
@@ -17,11 +16,8 @@ const PrivateRoute = ({ children }) => {
   }
 
   if (user) {
-    console.log("PrivateRoute: user authorized");
     return children;
   }
-
-  console.log("PrivateRoute: redirecting to login");
 
   return <Navigate to="/" state={{ from: location }} replace />;
 };
