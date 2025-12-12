@@ -7,12 +7,15 @@ import {
   FiMenu,
   FiX,
   FiGrid,
-  FiUserPlus
+  FiUserPlus,
+  FiUser,
+  FiActivity
 } from "react-icons/fi";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import useAuth from "../../Hook/useAuth";
 import useAdmin from "../../Hook/useAdmin";
 import useUser from "../../Hook/useUser";
+import useLabExpert from "../../Hook/useLabExpert";
 import { useState, useEffect } from "react";
 
 const Dashboard = () => {
@@ -20,6 +23,7 @@ const Dashboard = () => {
   const location = useLocation();
   const { logOut } = useAuth();
   const [isAdmin] = useAdmin();
+  const [isLabExpert] = useLabExpert();
   const [userData] = useUser();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -52,10 +56,15 @@ const Dashboard = () => {
     { to: "assign-test", icon: <FiGrid />, label: "Assign Tests" },
     { to: "patient-entry", icon: <FiUserPlus />, label: "Reception" },
     { to: "reports", icon: <FiFileText />, label: "Reports" },
+    { to: "patients", icon: <FiUser />, label: "Patients" },
   ];
 
   if (isAdmin) {
     navItems.push({ to: "settings", icon: <FiSettings />, label: "Settings" });
+  }
+
+  if (isLabExpert || isAdmin) {
+    navItems.push({ to: "lab-board", icon: <FiActivity />, label: "Lab Board" });
   }
 
   // Global Keyboard Shortcuts

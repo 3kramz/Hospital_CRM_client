@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { debounce } from "lodash";
+import { useLocation } from "react-router-dom";
 import useAxiosSecure from "../../../../Hook/useAxiosSecure";
 import useTests from "../../../../Hook/useTests";
 import { FiUser, FiCalendar, FiPhone, FiMapPin, FiMail, FiActivity, FiSearch, FiMonitor, FiPrinter, FiTrash2, FiPlusCircle, FiX } from "react-icons/fi";
@@ -9,6 +10,7 @@ const PatientEntry = () => {
   const { testData, loading: testsLoading } = useTests();
 
   // Patient Info & Search
+  const location = useLocation();
   const [patientInfo, setPatientInfo] = useState({
     name: "",
     age: "",
@@ -20,6 +22,27 @@ const PatientEntry = () => {
     pcName: "",
     pid: "",
   });
+
+  useEffect(() => {
+    if (location.state?.patient) {
+      const p = location.state.patient;
+      setPatientInfo({
+        name: p.name,
+        age: p.age,
+        gender: p.gender,
+        phone: p.phone,
+        address: p.address,
+        email: p.email || "",
+        refDoctor: p.refDoctor || "",
+        pcName: p.pcName || "",
+        pid: p.pid,
+      });
+      setPreviousDue(p.dueAmount || 0);
+      
+      // Clear state to prevent reloading on refresh/navigation back
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
@@ -355,8 +378,8 @@ const PatientEntry = () => {
       return;
     }
 
-    if (tests.length === 0) {
-      alert("Please select at least one test.");
+    if (tests.length === 0 && payment <= 0) {
+      alert("Please select at least one test OR enter a payment amount.");
       return;
     }
 

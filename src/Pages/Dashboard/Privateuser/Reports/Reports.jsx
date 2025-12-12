@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import useAxiosSecure from "../../../../Hook/useAxiosSecure";
 import { useNavigate } from "react-router-dom";
-import { FaSearch, FaFileInvoiceDollar, FaEye, FaChevronLeft, FaChevronRight, FaFilter } from "react-icons/fa";
+import { FaSearch, FaFileInvoiceDollar, FaEye, FaFilter } from "react-icons/fa";
 import HospitalLoader from "../../../../Components/Loading/HospitalLoader";
 
 const Reports = () => {
@@ -11,24 +11,48 @@ const Reports = () => {
   const [statusFilter, setStatusFilter] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("");
   const [sortField, setSortField] = useState("");
-  const [sortOrder, setSortOrder] = useState("asc");
-  const [totalPages, setTotalPages] = useState(1);
+  const [sortOrder, setSortOrder] = useState("desc");
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const [hasMore, setHasMore] = useState(true);
+  
+  const pageSize = 20;
   const navigate = useNavigate();
-
   const axiosSecure = useAxiosSecure();
+
+  const observer = useRef();
+  
+  const lastReportElementRef = useCallback(node => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        setCurrentPage(prevPage => prevPage + 1);
+      }
+    });
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore]);
+
 
   useEffect(() => {
     setLoading(true);
+    
     const delayDebounceFn = setTimeout(() => {
       axiosSecure
-        .get(`/save-patient-bill/all-reports?page=${currentPage}&limit=${pageSize}&search=${searchText}&status=${statusFilter}&payment=${paymentFilter}`)
+        .get(`/save-patient-bill/all-reports?page=${currentPage}&limit=${pageSize}&search=${searchText}&status=${statusFilter}&payment=${paymentFilter}&sort=${sortField}&order=${sortOrder}`)
         .then((res) => {
-          setReports(res.data.reports || []);
-          setTotalPages(res.data.totalPages || 1);
+          const newReports = res.data.reports || [];
+          const totalPages = res.data.totalPages || 1;
+          
+          setReports(prev => {
+            // If it's the first page, replace content. Otherwise append.
+            if (currentPage === 1) return newReports;
+            // Filter duplicates just in case, though ID check is expensive on large arrays so relying on page logic usually fine
+             return [...prev, ...newReports];
+          });
+          
           setTotalCount(res.data.totalCount || 0);
+          setHasMore(currentPage < totalPages);
           setLoading(false);
         })
         .catch((err) => {
@@ -38,11 +62,37 @@ const Reports = () => {
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [axiosSecure, currentPage, searchText, statusFilter, paymentFilter]);
+  }, [axiosSecure, currentPage, searchText, statusFilter, paymentFilter, sortField, sortOrder]);
+
+
+  const handleSearchChange = (e) => {
+      setSearchText(e.target.value);
+      setReports([]); // Optional: clear current view
+      setCurrentPage(1);
+      setHasMore(true);
+  };
+
+  const handleStatusChange = (e) => {
+      setStatusFilter(e.target.value);
+      setReports([]); 
+      setCurrentPage(1);
+      setHasMore(true);
+  };
+    
+  const handlePaymentChange = (e) => {
+      setPaymentFilter(e.target.value);
+       setReports([]); 
+      setCurrentPage(1);
+      setHasMore(true);
+  };
 
   const handleSort = (field) => {
+    const newOrder = sortField === field && sortOrder === "asc" ? "desc" : "asc";
     setSortField(field);
-    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    setSortOrder(newOrder);
+    setReports([]);
+    setCurrentPage(1);
+    setHasMore(true);
   };
 
   const highlightText = (text) => {
@@ -60,7 +110,7 @@ const Reports = () => {
     );
   };
   
-  const startIndex = (currentPage - 1) * pageSize;
+  const startIndex = (currentPage - 1) * pageSize; // Only vaguely accurate for infinite scroll if we tracked 'loaded so far', but for row number we can just use index
 
   return (
     <div className="bg-gray-50 min-h-screen p-6 font-sans">
@@ -93,10 +143,7 @@ const Reports = () => {
                   type="text"
                   placeholder="Search by Name, Contact, PID..."
                   value={searchText}
-                  onChange={(e) => {
-                    setSearchText(e.target.value);
-                    setCurrentPage(1);
-                  }}
+                  onChange={handleSearchChange}
                   className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out sm:text-sm"
                 />
               </div>
@@ -109,10 +156,7 @@ const Reports = () => {
                     </div>
                     <select
                       value={statusFilter}
-                      onChange={(e) => {
-                        setStatusFilter(e.target.value);
-                        setCurrentPage(1);
-                      }}
+                      onChange={handleStatusChange}
                       className="block w-full pl-9 pr-8 py-2.5 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none cursor-pointer hover:bg-white transition-colors"
                     >
                       <option value="">All Status</option>
@@ -126,10 +170,7 @@ const Reports = () => {
                     </div>
                     <select
                       value={paymentFilter}
-                      onChange={(e) => {
-                        setPaymentFilter(e.target.value);
-                        setCurrentPage(1);
-                      }}
+                      onChange={handlePaymentChange}
                       className="block w-full pl-9 pr-8 py-2.5 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none cursor-pointer hover:bg-white transition-colors"
                     >
                       <option value="">All Payment</option>
@@ -174,21 +215,26 @@ const Reports = () => {
                  </tr>
                </thead>
                <tbody className="bg-white divide-y divide-gray-200">
-                 {loading ? (
-                    <tr>
-                      <td colSpan="8" className="px-6 py-10 text-center text-gray-500">
-                        <HospitalLoader />
-                      </td>
-                    </tr>
-                 ) : reports.length === 0 ? (
+                 {/* Empty State */}
+                 {!loading && reports.length === 0 && (
                     <tr>
                       <td colSpan="8" className="px-6 py-10 text-center text-gray-500 italic">No reports found matching your criteria.</td>
                     </tr>
-                 ) : (
-                   reports.map((rpt, idx) => (
-                     <tr key={rpt.id} className="hover:bg-blue-50/30 transition-colors duration-150 group">
+                 )}
+                 
+                 {/* Data Rows */}
+                 {reports.map((rpt, idx) => {
+                     // Check if this is the last element
+                     const isLastElement = reports.length === idx + 1;
+                     
+                     return (
+                     <tr 
+                        key={`${rpt.id}-${idx}`} // Using both checks uniqueness
+                        ref={isLastElement ? lastReportElementRef : null}
+                        className="hover:bg-blue-50/30 transition-colors duration-150 group"
+                     >
                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                         {startIndex + idx + 1}
+                         {idx + 1}
                        </td>
                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                          {highlightText(rpt.invoiceId)}
@@ -227,60 +273,30 @@ const Reports = () => {
                          </button>
                        </td>
                      </tr>
-                   ))
+                   );
+                 })}
+                 
+                 {/* Loading Indicator for Infinite Scroll */}
+                 {loading && (
+                    <tr>
+                      <td colSpan="8" className="px-6 py-6 transition-all">
+                        <div className="flex flex-col items-center justify-center gap-2 text-gray-400">
+                           <HospitalLoader />
+                           <span className="text-xs font-medium uppercase tracking-wider">Loading more reports...</span>
+                        </div>
+                      </td>
+                    </tr>
                  )}
                </tbody>
              </table>
           </div>
-
-          {/* Pagination */}
-          <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-            <div className="text-sm text-gray-500">
-               Showing <span className="font-medium text-gray-900">{reports.length > 0 ? startIndex + 1 : 0}</span> to <span className="font-medium text-gray-900">{Math.min(startIndex + pageSize, totalCount)}</span> of <span className="font-medium text-gray-900">{totalCount}</span> results
-            </div>
-            
-            <div className="flex gap-2">
-              <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="inline-flex items-center gap-1 px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <FaChevronLeft className="text-xs" /> Prev
-              </button>
-
-              <div className="hidden sm:flex gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                    if (totalPages > 7 && Math.abs(page - currentPage) > 2 && page !== 1 && page !== totalPages) {
-                       if (Math.abs(page - currentPage) === 3) return <span key={page} className="px-2 py-1">...</span>;
-                       return null;
-                    }
-                    return (
-                        <button
-                          key={page}
-                          onClick={() => setCurrentPage(page)}
-                          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                            currentPage === page 
-                              ? "bg-blue-600 text-white shadow-sm" 
-                              : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-                          }`}
-                        >
-                          {page}
-                        </button>
-                    )
-                 })}
-              </div>
-
-              <button
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                disabled={currentPage === totalPages}
-                className="inline-flex items-center gap-1 px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Next <FaChevronRight className="text-xs" />
-              </button>
-            </div>
-          </div>
+          
+          {/* Bottom Summary / No More Data */}
+          {!hasMore && reports.length > 0 && !loading && (
+             <div className="bg-gray-50 px-6 py-4 text-center text-sm text-gray-500 border-t border-gray-200">
+                You have reached the end of the list.
+             </div>
+          )}
         </div>
       </div>
     </div>

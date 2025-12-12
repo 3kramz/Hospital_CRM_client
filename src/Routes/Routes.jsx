@@ -11,8 +11,11 @@ import PatientEntry from "../Pages/Dashboard/Privateuser/PatientEntry/PatientEnt
 import AssignTest from "../Pages/Dashboard/Privateuser/AssignTest/AssignTest";
 import Invoice from "../Pages/Dashboard/Privateuser/Invoice/Invoice";
 import Reports from "../Pages/Dashboard/Privateuser/Reports/Reports";
+import Patients from "../Pages/Dashboard/Privateuser/Patients/Patients";
+import PublicPatientHistory from "../Pages/Dashboard/Privateuser/Patients/PublicPatientHistory";
 import Settings from "../Pages/Dashboard/Privateuser/Settings/Settings";
 import AdminRoute from "./AdminRoute";
+import LabBoard from "../Pages/Dashboard/Privateuser/LabBoard/LabBoard";
 
 
 export const router = createBrowserRouter([
@@ -49,6 +52,10 @@ export const router = createBrowserRouter([
             element: <Reports />,
           },
           {
+            path: "patients",
+            element: <Patients />,
+          },
+          {
             path: "settings",
             element: (
               <AdminRoute>
@@ -56,12 +63,20 @@ export const router = createBrowserRouter([
               </AdminRoute>
             ),
           },
+          {
+            path: "lab-board",
+            element: <LabBoard />,
+          },
         ],
       },
       {
             path: "invoice/:groupId",
             element: <Invoice />,
           },
+      {
+         path: "patient-history/:pid",
+         element: <PublicPatientHistory />,
+      },
     ],
   },
   {

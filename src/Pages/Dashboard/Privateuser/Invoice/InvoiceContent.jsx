@@ -1,5 +1,6 @@
 import React, { forwardRef } from "react";
 import JsBarcode from "jsbarcode";
+import QRCode from "react-qr-code";
 
 const InvoiceContent = forwardRef(({ invoiceData }, ref) => {
   const {
@@ -61,6 +62,18 @@ const InvoiceContent = forwardRef(({ invoiceData }, ref) => {
             <p>Phone: +880 1343 524 436</p>
             <p>Email: info@webnestsolution.com</p>
           </div>
+          
+           {/* QR Code */}
+           <div className="mt-6 flex flex-col items-start gap-1">
+              <div className="p-1 bg-white border border-gray-200 rounded">
+                 <QRCode 
+                    value={`${window.location.origin}/patient-history/${pid}`} 
+                    size={64}
+                    level="M"
+                 />
+              </div>
+              <span className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Scan for History</span>
+           </div>
         </div>
         <div className="text-right">
           <h2 className="text-2xl font-semibold text-gray-800 mb-4 print:text-xl print:mb-2">INVOICE</h2>

@@ -240,6 +240,7 @@ const Settings = () => {
                         <option value="doctor">Doctor</option>
                         <option value="admin">Admin</option>
                         <option value="frontdesk">Front Desk</option>
+                        <option value="lab_expert">Lab Expert</option>
                     </select>
                 </div>
                 <div className="modal-action">
@@ -287,6 +288,7 @@ const Settings = () => {
                         <option value="doctor">Doctor</option>
                         <option value="admin">Admin</option>
                         <option value="frontdesk">Front Desk</option>
+                        <option value="lab_expert">Lab Expert</option>
                     </select>
                 </div>
 
