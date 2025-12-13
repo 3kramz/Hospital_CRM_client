@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import useAxiosSecure from "../../../../Hook/useAxiosSecure";
+import useUserData from "../../../../Hook/useUserData";
 import HospitalLoader from "../../../../Components/Loading/HospitalLoader";
 import Swal from 'sweetalert2';
 import { FiActivity, FiCheckCircle, FiClock, FiPlay, FiSearch, FiFileText, FiFile } from 'react-icons/fi';
@@ -10,17 +11,21 @@ import testMasterData from "../../../../lab_test_master_expanded.json";
 
 const LabBoard = () => {
     const axiosSecure = useAxiosSecure();
-    const [activeTab, setActiveTab] = useState('assigned'); // assigned (includes running), completed
+    const [activeTab, setActiveTab] = useState('assigned'); // assigned, sample_collected, completed
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedDepartment, setSelectedDepartment] = useState("All");
+    const [userData] = useUserData();
 
     const { data: queue = [], isLoading, refetch } = useQuery({
         queryKey: ['lab-queue', activeTab, searchQuery],
         queryFn: async () => {
-             // For assigned tab, we fetch both assigned and running
-             const statusParam = activeTab === 'assigned' ? 'assigned,test_running' : 'complete';
+             let statusParam = '';
+             if (activeTab === 'assigned') statusParam = 'assigned';
+             else if (activeTab === 'sample_collected') statusParam = 'sample_collected,test_running'; // include running if any
+             else if (activeTab === 'completed') statusParam = 'complete';
+
              const encodedSearch = encodeURIComponent(searchQuery);
-             const res = await axiosSecure.get(`/save-patient-bill/lab-queue?status=${statusParam}&search=${encodedSearch}`);
+             const res = await axiosSecure.get(`/tests/lab-queue?status=${statusParam}&search=${encodedSearch}`);
              return res.data;
         },
         placeholderData: keepPreviousData,
@@ -30,7 +35,7 @@ const LabBoard = () => {
 
     const handleStatusUpdate = async (test, newStatus) => {
         try {
-            const res = await axiosSecure.patch('/save-patient-bill/status', {
+            const res = await axiosSecure.patch('/tests/status', {
                 groupId: test._id,
                 testId: test.testId,
                 status: newStatus
@@ -80,35 +85,45 @@ const LabBoard = () => {
         return groups;
     };
 
-    const { runningGroups, assignedGroups, completedGroups } = useMemo(() => {
-        // Running tests: NEVER filtered by department (always show urgent tasks)
-        const running = queue.filter(item => item.status === 'test_running');
+    const { runningGroups, assignedGroups, completedGroups, sampleCollectedGroups } = useMemo(() => {
         
         // Filter helper
         const matchesDepartment = (item) => {
+             // Admin sees all
+             if (userData?.role === 'admin') {
+                 if (selectedDepartment === "All") return true;
+                 const { department } = getTestData(item.testName);
+                 return department === selectedDepartment;
+             }
+             
+             // Role based default filter
+             // If user has a department, strictly filter by it?
+             // User said "one department sample collection user cant update another department test status"
+             // But can they SEE it? Usually better to hide it.
+             // Assuming userData has department field now.
+             
+             if (userData?.department) {
+                  const { department } = getTestData(item.testName);
+                  // Allow matching "Biochemistry" with "Biochemistry"
+                  // Handling case sensitivity or minor diffs
+                  return department?.toLowerCase() === userData.department.toLowerCase();
+             }
+
+             // Fallback for demo users without department set
              if (selectedDepartment === "All") return true;
              const { department } = getTestData(item.testName);
              return department === selectedDepartment;
         };
 
-        if (activeTab === 'completed') {
-            const completed = queue.filter(item => matchesDepartment(item));
-            return { completedGroups: groupData(completed), runningGroups: {}, assignedGroups: {} };
-        }
-        
-        // Assigned tests: Filtered by department
-        const assigned = queue.filter(item => 
-            item.status !== 'test_running' && 
-            item.status !== 'complete' &&
-            matchesDepartment(item)
-        );
+        const filteredQueue = queue.filter(matchesDepartment);
 
         return {
-            runningGroups: groupData(running),
-            assignedGroups: groupData(assigned),
-            completedGroups: {}
+            assignedGroups: groupData(filteredQueue.filter(i => !i.status || i.status === 'assigned')),
+            sampleCollectedGroups: groupData(filteredQueue.filter(i => i.status === 'sample_collected' || i.status === 'test_running')),
+            completedGroups: groupData(filteredQueue.filter(i => i.status === 'complete')),
+            runningGroups: {} // unused now merged into sampleCollected mostly or separate
         };
-    }, [queue, activeTab, selectedDepartment]);
+    }, [queue, activeTab, selectedDepartment, userData]);
 
     if (isLoading) return <HospitalLoader />;
 
@@ -116,7 +131,7 @@ const LabBoard = () => {
         Object.keys(groups).sort().map(category => (
             <div key={category} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
                 <div className="bg-gray-50/80 px-6 py-3 border-b border-gray-100 flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${actionType === 'running' ? 'bg-primary' : (actionType === 'completed' ? 'bg-success' : 'bg-secondary')}`}></span>
+                    <span className={`w-2 h-2 rounded-full ${actionType === 'sample_collected' ? 'bg-primary' : (actionType === 'completed' ? 'bg-success' : 'bg-secondary')}`}></span>
                     <h3 className="font-semibold text-gray-700">{category}</h3>
                     <span className="text-xs bg-white border border-gray-200 px-2 py-0.5 rounded-full text-gray-500 font-medium">
                         {groups[category].length}
@@ -163,34 +178,33 @@ const LabBoard = () => {
                                         >
                                             <FiFile />
                                         </Link>
+                                        
+                                        {/* Actions based on Tab & Role */}
                                         {actionType === 'assigned' && (
-                                            <button 
-                                                onClick={() => handleStatusUpdate(item, 'test_running')}
-                                                className="btn btn-sm btn-primary text-white shadow-sm shadow-primary/30"
-                                            >
-                                                <FiPlay /> Start
-                                            </button>
+                                            (userData?.role === 'sample_collection' || userData?.role === 'admin') ? (
+                                                <button 
+                                                    onClick={() => handleStatusUpdate(item, 'sample_collected')}
+                                                    className="btn btn-sm btn-secondary text-white shadow-sm shadow-secondary/30"
+                                                >
+                                                    <FaFlask /> Collect Sample
+                                                </button>
+                                            ) : <span className="text-xs text-gray-400">Waiting Collection</span>
                                         )}
-                                        {actionType === 'running' && (
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex items-center gap-1.5 px-3 py-1 bg-purple-50 rounded-full border border-purple-100">
-                                                    <div className="relative">
-                                                        <FaFlask className="text-purple-600 animate-bounce text-sm" />
-                                                        <span className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-purple-400 rounded-full animate-ping"></span>
-                                                    </div>
-                                                    <span className="text-xs font-semibold text-purple-700 animate-pulse">Running...</span>
-                                                </div>
+
+                                        {actionType === 'sample_collected' && (
+                                            (userData?.role === 'lab_expert' || userData?.role === 'admin') ? (
                                                 <button 
                                                     onClick={() => handleStatusUpdate(item, 'complete')}
-                                                    className="btn btn-sm btn-success text-white shadow-sm shadow-success/30"
+                                                    className="btn btn-sm btn-primary text-white shadow-sm shadow-primary/30"
                                                 >
-                                                    <FiCheckCircle /> Complete
+                                                    <FiCheckCircle /> Complete Test
                                                 </button>
-                                            </div>
+                                            ) : <span className="text-xs text-info flex items-center gap-1"><FaFlask/> Processing</span>
                                         )}
+
                                          {actionType === 'completed' && (
                                             <span className="text-success font-medium text-sm flex items-center justify-end gap-1 px-3 py-1">
-                                                <FiCheckCircle /> Done
+                                                <FiCheckCircle /> Donex
                                             </span>
                                         )}
                                     </td>
@@ -243,11 +257,10 @@ const LabBoard = () => {
                 </div>
             </div>
 
-            {/* Controls: Tabs Only */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 {/* Tabs */}
                 <div className="flex space-x-1 bg-gray-100 p-1 rounded-xl w-fit">
-                    {['assigned', 'completed'].map((tab) => (
+                    {['assigned', 'sample_collected', 'completed'].map((tab) => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
@@ -260,8 +273,9 @@ const LabBoard = () => {
                             `}
                         >
                             {tab === 'assigned' && <FiClock />}
+                            {tab === 'sample_collected' && <FaFlask />}
                             {tab === 'completed' && <FiCheckCircle />}
-                            {tab}
+                            {tab.replace('_', ' ')}
                         </button>
                     ))}
                 </div>
@@ -270,37 +284,37 @@ const LabBoard = () => {
             {/* Content */}
             <div className="space-y-8">
                 {activeTab === 'assigned' && (
-                    <>
-                        {/* Running Tests Section */}
-                        {Object.keys(runningGroups).length > 0 && (
-                            <div>
-                                <h2 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
-                                    <FiPlay className="text-primary" /> Tests Running
-                                </h2>
-                                {renderTable(runningGroups, 'running')}
-                            </div>
-                        )}
-
-                        {/* Assigned Tests Section */}
-                         <div>
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-lg font-semibold text-gray-700 flex items-center gap-2">
-                                    <FiClock className="text-secondary" /> Assigned Tests
-                                </h2>
-                                <DeptFilter />
-                            </div>
-                            
-                            {Object.keys(assignedGroups).length === 0 ? (
-                                <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-gray-200">
-                                    <div className="bg-gray-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <FiFileText className="text-2xl text-gray-400" />
-                                    </div>
-                                    <h3 className="text-lg font-medium text-gray-900">No assigned tests</h3>
-                                    <p className="text-gray-500 text-sm">All caught up!</p>
-                                </div>
-                            ) : renderTable(assignedGroups, 'assigned')}
+                    <div>
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-lg font-semibold text-gray-700 flex items-center gap-2">
+                                <FiClock className="text-secondary" /> Assigned for Collection
+                            </h2>
+                            <DeptFilter />
                         </div>
-                    </>
+                        
+                        {Object.keys(assignedGroups).length === 0 ? (
+                            <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-gray-200">
+                                <p className="text-gray-500 text-sm">No assigned tests pending collection.</p>
+                            </div>
+                        ) : renderTable(assignedGroups, 'assigned')}
+                    </div>
+                )}
+
+                {activeTab === 'sample_collected' && (
+                    <div>
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-lg font-semibold text-gray-700 flex items-center gap-2">
+                                <FaFlask className="text-primary" /> Samples in Lab
+                            </h2>
+                            <DeptFilter />
+                        </div>
+                        
+                        {Object.keys(sampleCollectedGroups).length === 0 ? (
+                            <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-gray-200">
+                                <p className="text-gray-500 text-sm">No samples waiting for analysis.</p>
+                            </div>
+                        ) : renderTable(sampleCollectedGroups, 'sample_collected')}
+                    </div>
                 )}
 
                 {activeTab === 'completed' && (

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import useAxiosSecure from './useAxiosSecure';
 
@@ -10,7 +11,7 @@ const useTests = () => {
     const fetchData = async () => {
       try {
         // Fetch from backend
-        const { data } = await axiosSecure.get('/save-patient-bill/test-list');
+        const { data } = await axiosSecure.get('/tests/test-list');
         
         // Transform flat list to nested structure (Department -> Category -> List)
         // This maintains compatibility with AssignTest.jsx and PatientEntry.jsx
@@ -36,9 +37,6 @@ const useTests = () => {
         }
       } catch (error) {
         console.error("Failed to fetch tests from backend:", error);
-        // Fallback to local file if backend fails? 
-        // Better to just fail or show empty so user knows something is up.
-        // But for smoothness, maybe let's not fallback silently.
       } finally {
         setLoading(false);
       }

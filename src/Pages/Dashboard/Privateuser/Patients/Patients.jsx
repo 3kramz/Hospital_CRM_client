@@ -116,11 +116,14 @@ const Patients = () => {
                     <tr key={patient._id} className="hover:bg-gray-50/50 transition-colors">
                       <td className="px-6 py-4 font-mono text-xs text-gray-500">{patient.pid}</td>
                       <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center text-secondary font-bold text-xs uppercase">
+                          <div 
+                            onClick={() => handleViewHistory(patient.pid)}
+                            className="flex items-center gap-3 cursor-pointer hover:bg-gray-100/50 rounded-lg p-1 -m-1 transition-colors group"
+                          >
+                            <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center text-secondary font-bold text-xs uppercase group-hover:bg-secondary/20 transition-colors">
                                 {patient.name.charAt(0)}
                             </div>
-                            <span className="font-medium text-gray-800">{patient.name}</span>
+                            <span className="font-medium text-gray-800 group-hover:text-primary transition-colors">{patient.name}</span>
                           </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">

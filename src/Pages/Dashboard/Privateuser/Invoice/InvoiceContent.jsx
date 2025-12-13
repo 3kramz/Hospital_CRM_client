@@ -132,7 +132,8 @@ const InvoiceContent = forwardRef(({ invoiceData }, ref) => {
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200 print:bg-gray-100">
               <th className="py-3 px-4 text-left font-semibold text-gray-600 uppercase text-xs tracking-wider rounded-tl-lg print:py-1 print:px-2">#</th>
-              <th className="py-3 px-4 text-left font-semibold text-gray-600 uppercase text-xs tracking-wider w-1/2 print:py-1 print:px-2">Test Name</th>
+              <th className="py-3 px-4 text-left font-semibold text-gray-600 uppercase text-xs tracking-wider w-1/3 print:py-1 print:px-2">Test Name</th>
+              <th className="py-3 px-4 text-left font-semibold text-gray-600 uppercase text-xs tracking-wider print:py-1 print:px-2">Room</th>
               <th className="py-3 px-4 text-right font-semibold text-gray-600 uppercase text-xs tracking-wider print:py-1 print:px-2">Price</th>
               <th className="py-3 px-4 text-right font-semibold text-gray-600 uppercase text-xs tracking-wider print:py-1 print:px-2">Disc.</th>
               <th className="py-3 px-4 text-right font-semibold text-gray-600 uppercase text-xs tracking-wider rounded-tr-lg print:py-1 print:px-2">Amount</th>
@@ -143,6 +144,7 @@ const InvoiceContent = forwardRef(({ invoiceData }, ref) => {
               <tr key={i} className="hover:bg-gray-50/50 transition-colors">
                 <td className="py-3 px-4 text-gray-400 font-mono text-xs print:py-1 print:px-2">{String(i + 1).padStart(2, '0')}</td>
                 <td className="py-3 px-4 text-gray-800 font-medium print:py-1 print:px-2">{t.testName}</td>
+                <td className="py-3 px-4 text-gray-600 text-xs print:py-1 print:px-2">{t.roomNumber || '-'}</td>
                 <td className="py-3 px-4 text-gray-600 text-right print:py-1 print:px-2">{t.price.toFixed(2)}</td>
                 <td className="py-3 px-4 text-gray-500 text-right print:py-1 print:px-2">{t.discount > 0 ? `-${t.discount}` : '-'}</td>
                 <td className="py-3 px-4 text-gray-800 font-medium text-right font-mono print:py-1 print:px-2">

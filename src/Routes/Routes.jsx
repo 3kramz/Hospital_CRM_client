@@ -16,8 +16,9 @@ import PublicPatientHistory from "../Pages/Dashboard/Privateuser/Patients/Public
 import Settings from "../Pages/Dashboard/Privateuser/Settings/Settings";
 import AdminRoute from "./AdminRoute";
 import LabBoard from "../Pages/Dashboard/Privateuser/LabBoard/LabBoard";
-
-
+import RoleRoute from "./RoleRoute";
+import DashboardHomeRedirect from "../Pages/Dashboard/DashboardHomeRedirect";
+import DashboardHome from "../Pages/Dashboard/DashboardHome";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -37,35 +38,55 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <Navigate to="assign-test" replace />,
+            element: <DashboardHomeRedirect />, 
+          },
+          {
+            path: "dashboard-home",
+            element: (
+              <RoleRoute allowedRoles={['admin']}>
+                 <DashboardHome />
+              </RoleRoute>
+            ),
           },
           {
             path: "patient-entry",
-            element: <PatientEntry />,
+            element: (
+              <RoleRoute allowedRoles={['front_desk']}>
+                <PatientEntry />
+              </RoleRoute>
+            ),
           },
            {
             path: "assign-test",
-            element: <AssignTest />,
+            element: (
+              <RoleRoute allowedRoles={['front_desk']}>
+                <AssignTest />
+              </RoleRoute>
+            ),
           },
           {
             path: "reports",
-            element: <Reports />,
+            element: <Reports />, // All logged in users
           },
           {
             path: "patients",
-            element: <Patients />,
+            element: <Patients />, // All logged in users
           },
           {
             path: "settings",
             element: (
-              <AdminRoute>
+              <RoleRoute allowedRoles={['admin']}>
                 <Settings />
-              </AdminRoute>
+              </RoleRoute>
             ),
           },
           {
             path: "lab-board",
-            element: <LabBoard />,
+            element: (
+              <RoleRoute allowedRoles={['lab_expert', 'sample_collection']}>
+                <LabBoard />
+              </RoleRoute>
+            ),
           },
         ],
       },

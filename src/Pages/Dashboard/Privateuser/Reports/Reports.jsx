@@ -46,7 +46,7 @@ const Reports = () => {
     // Note: backend expects 'status' for payment status (Paid/Due) and 'testStatus' for test status.
     const delayDebounceFn = setTimeout(() => {
       axiosSecure
-        .get(`/save-patient-bill/all-reports?page=${currentPage}&limit=${pageSize}&search=${searchText}&status=${paymentStatusFilter}&testStatus=${testStatusFilter}&sort=${sortField}&order=${sortOrder}&startDate=${startDate}&endDate=${endDate}`)
+        .get(`/tests/all-reports?page=${currentPage}&limit=${pageSize}&search=${searchText}&status=${paymentStatusFilter}&testStatus=${testStatusFilter}&sort=${sortField}&order=${sortOrder}&startDate=${startDate}&endDate=${endDate}`)
         .then((res) => {
           const newReports = res.data.reports || [];
           const totalPages = res.data.totalPages || 1;

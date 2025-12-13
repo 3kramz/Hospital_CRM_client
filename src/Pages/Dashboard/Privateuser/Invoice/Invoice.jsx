@@ -13,7 +13,7 @@ export default function Invoice() {
 
   useEffect(() => {
     if (!groupId) return;
-    axiosPublic.get(`/save-patient-bill/${groupId}`)
+    axiosPublic.get(`/tests/${groupId}`)
       .then(res =>setInvoiceData(res.data))
       .catch(err => {
         console.error("Failed to fetch invoice data:", err);

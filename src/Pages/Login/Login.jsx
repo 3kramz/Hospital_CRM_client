@@ -10,7 +10,7 @@ const Login = () => {
 
   useEffect(() => {
     if (user) {
-      navigate("/dashboard/patient-entry", { replace: true }); // replace prevents going back to login
+      navigate("/dashboard/", { replace: true }); // replace prevents going back to login
     }
   }, [user, navigate]); // Dependencies ensure this runs only when user state changes
 

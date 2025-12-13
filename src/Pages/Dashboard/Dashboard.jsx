@@ -13,18 +13,15 @@ import {
 } from "react-icons/fi";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import useAuth from "../../Hook/useAuth";
-import useAdmin from "../../Hook/useAdmin";
-import useUser from "../../Hook/useUser";
-import useLabExpert from "../../Hook/useLabExpert";
+import useUserData from "../../Hook/useUserData";
 import { useState, useEffect } from "react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logOut } = useAuth();
-  const [isAdmin] = useAdmin();
-  const [isLabExpert] = useLabExpert();
-  const [userData] = useUser();
+  const [userData] = useUserData();
+  
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -52,18 +49,32 @@ const Dashboard = () => {
     navigate("/");
   };
 
-  const navItems = [
-    { to: "assign-test", icon: <FiGrid />, label: "Assign Tests" },
-    { to: "patient-entry", icon: <FiUserPlus />, label: "Reception" },
-    { to: "reports", icon: <FiFileText />, label: "Reports" },
-    { to: "patients", icon: <FiUser />, label: "Patients" },
-  ];
+  const userRole = userData?.role?.toLowerCase();
+  const isAdmin = userRole === 'admin';
+  const isFrontDesk = userRole === 'front_desk';
+  const isLabExpert = userRole === 'lab_expert';
+  const isSampleCollection = userRole === 'sample_collection';
 
-  if (isAdmin) {
-    navItems.push({ to: "settings", icon: <FiSettings />, label: "Settings" });
+  const navItems = [];
+
+  // Front Desk: Patient Entry & Assign Test
+  if (isFrontDesk) {
+    navItems.push({ to: "assign-test", icon: <FiGrid />, label: "Assign Tests" });
+    navItems.push({ to: "patient-entry", icon: <FiUserPlus />, label: "Reception" });
   }
 
-  if (isLabExpert || isAdmin) {
+  // All Users (except maybe pure admins if they want less clutter, but Admin usually sees Reports/Patients)
+  navItems.push({ to: "reports", icon: <FiFileText />, label: "Reports" });
+  navItems.push({ to: "patients", icon: <FiUser />, label: "Patients" });
+
+  // Admin Only: Settings & Overview
+  if (isAdmin) {
+    navItems.push({ to: "settings", icon: <FiSettings />, label: "Settings" });
+    navItems.unshift({ to: "dashboard-home", icon: <FiActivity />, label: "Overview" });
+  }
+
+  // Lab Stuff
+  if (isLabExpert || isSampleCollection) {
     navItems.push({ to: "lab-board", icon: <FiActivity />, label: "Lab Board" });
   }
 

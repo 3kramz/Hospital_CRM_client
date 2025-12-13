@@ -219,18 +219,6 @@ const PatientEntry = () => {
   const searchPatients = useCallback(
     debounce(async (query) => {
       if (!query.trim()) {
-        setSuggestions([]);
-        setSelectedSuggestionIndex(-1);
-        setPreviousDue(0);
-        return;
-      }
-      try {
-        const { data } = await axiosSecure.get(`/patients/search?q=${query}`);
-        setSuggestions(data);
-        setSelectedSuggestionIndex(-1);
-      } catch (err) {
-        console.error("Error searching patients:", err);
-        setSuggestions([]);
       }
     }, 400),
     [axiosSecure]
