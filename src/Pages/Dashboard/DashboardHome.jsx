@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import useAxiosSecure from '../../Hook/useAxiosSecure';
+import useUserData from '../../Hook/useUserData';
 import HospitalLoader from '../../Components/Loading/HospitalLoader';
 import { FiDollarSign, FiActivity, FiCheckCircle, FiClock, FiUsers } from 'react-icons/fi';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const DashboardHome = () => {
     const axiosSecure = useAxiosSecure();
+    const [userData] = useUserData();
     const [period, setPeriod] = useState('daily');
     const [dateRange, setDateRange] = useState({ start: '', end: '' });
 
     const { data: stats, isLoading, isFetching } = useQuery({
         queryKey: ['dashboard-stats', period, dateRange.start, dateRange.end],
+        enabled: userData?.role === 'admin',
         queryFn: async () => {
             let query = `?period=${period}`;
             if (dateRange.start && dateRange.end) {

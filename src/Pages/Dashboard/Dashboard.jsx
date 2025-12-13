@@ -58,7 +58,7 @@ const Dashboard = () => {
   const navItems = [];
 
   // Front Desk: Patient Entry & Assign Test
-  if (isFrontDesk) {
+  if (isFrontDesk || isAdmin) {
     navItems.push({ to: "assign-test", icon: <FiGrid />, label: "Assign Tests" });
     navItems.push({ to: "patient-entry", icon: <FiUserPlus />, label: "Reception" });
   }
@@ -68,10 +68,13 @@ const Dashboard = () => {
   navItems.push({ to: "patients", icon: <FiUser />, label: "Patients" });
 
   // Admin Only: Settings & Overview
+  // Admin Only: Settings
   if (isAdmin) {
     navItems.push({ to: "settings", icon: <FiSettings />, label: "Settings" });
-    navItems.unshift({ to: "dashboard-home", icon: <FiActivity />, label: "Overview" });
   }
+  
+  // Everyone gets Overview
+  navItems.unshift({ to: "dashboard-home", icon: <FiActivity />, label: "Overview" });
 
   // Lab Stuff
   if (isLabExpert || isSampleCollection) {

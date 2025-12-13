@@ -18,22 +18,6 @@ axiosSecure.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        // Check if it's a network error (server down) and we haven't retried yet
-        if (
-            error.message === "Network Error" &&
-            !originalRequest._retry &&
-            axiosSecure.defaults.baseURL === LOCAL_URL
-        ) {
-            originalRequest._retry = true;
-            console.warn("Local server unreachable, switching to Remote Server...");
-
-            // Switch the default base URL for this instance to the remote URL
-            axiosSecure.defaults.baseURL = REMOTE_URL;
-
-            // Update the baseURL of the failing request and retry
-            originalRequest.baseURL = REMOTE_URL;
-            return axiosSecure(originalRequest);
-        }
         return Promise.reject(error);
     }
 );

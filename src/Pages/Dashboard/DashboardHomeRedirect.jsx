@@ -15,11 +15,8 @@ const DashboardHomeRedirect = () => {
 
     if (!userData) return <Navigate to="/" replace />;
 
-    if (userData.role === 'admin') return <Navigate to="dashboard-home" replace />;
-    if (userData.role === 'front_desk') return <Navigate to="assign-test" replace />;
-    if (userData.role === 'lab_expert' || userData.role === 'sample_collection') return <Navigate to="lab-board" replace />;
-    
-    return <Navigate to="reports" replace />;
+    // If everyone has access to dashboard-home, we can default there.
+    return <Navigate to="dashboard-home" replace />;
 };
 
 export default DashboardHomeRedirect;

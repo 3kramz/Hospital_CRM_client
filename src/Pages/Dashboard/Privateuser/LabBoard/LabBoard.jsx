@@ -55,7 +55,7 @@ const LabBoard = () => {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Failed to update status'
+                text: error.response?.data?.error || 'Failed to update status'
             });
         }
     };

@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import useAxiosSecure from "../../../../Hook/useAxiosSecure";
+import useUserData from "../../../../Hook/useUserData";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FaSearch, FaFileInvoiceDollar, FaEye, FaFilter, FaSpinner, FaSort, FaVials, FaClipboardList, FaCheckCircle, FaFlask } from "react-icons/fa";
+import { FaSearch, FaFileInvoiceDollar, FaEye, FaFilter, FaSpinner, FaSort, FaVials, FaClipboardList, FaCheckCircle, FaFlask, FaTruck, FaBoxOpen } from "react-icons/fa";
 import { FiCheckCircle } from "react-icons/fi";
 import HospitalLoader from "../../../../Components/Loading/HospitalLoader";
+import Swal from "sweetalert2";
 
 const Reports = () => {
   const [reports, setReports] = useState([]);
@@ -25,6 +27,7 @@ const Reports = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const axiosSecure = useAxiosSecure();
+  const [userData] = useUserData();
 
   const observer = useRef();
   
@@ -164,6 +167,18 @@ const Reports = () => {
            <FaSpinner className="animate-spin text-base" /> Running
         </span>
       );
+    } else if (normalizedStatus === "ready to deliver" || normalizedStatus === "ready_to_deliver") {
+      return (
+        <span className="text-blue-600 font-medium text-sm flex items-center justify-center gap-1.5 bg-blue-50 px-3 py-1 rounded-full border border-blue-100/50">
+           <FaBoxOpen className="text-base" /> Ready
+        </span>
+      );
+    } else if (normalizedStatus === "delivered") {
+      return (
+        <span className="text-gray-600 font-medium text-sm flex items-center justify-center gap-1.5 bg-gray-50 px-3 py-1 rounded-full border border-gray-200">
+           <FaCheckCircle className="text-base" /> Delivered
+        </span>
+      );
     } else {
       // Assigned or others
       return (
@@ -173,6 +188,43 @@ const Reports = () => {
       );
     }
   };
+
+  const handleStatusUpdate = async (rpt, action) => {
+    let newStatus = "";
+    if (action === 'ready') newStatus = "ready_to_deliver";
+    if (action === 'deliver') newStatus = "delivered";
+
+    if (!newStatus) return;
+
+    try {
+        const res = await axiosSecure.patch("/tests/group-status", {
+            groupId: rpt._id,
+            status: newStatus
+        });
+        
+        if (res.data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Status Updated',
+                text: res.data.message,
+                timer: 1500,
+                showConfirmButton: false
+            });
+            // Refresh list - simpler to just clear and let effect reload
+            setReports([]);
+            setCurrentPage(1); // will trigger reload
+        }
+    } catch (err) {
+        console.error("Status update failed", err);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: err.response?.data?.error || "Failed to update status"
+        });
+    }
+  };
+
+  const isFrontDesk = userData?.role === 'front_desk' || userData?.role === 'admin';
 
   return (
     <div className="bg-gray-50/50 min-h-screen p-6 font-outfit">
@@ -452,16 +504,45 @@ const Reports = () => {
 
                          {/* Actions */}
                          <td className="px-6 py-4 whitespace-nowrap text-center">
-                            <button 
-                              onClick={(e) => {
-                                 e.stopPropagation();
-                                 navigate(`/invoice/${rpt._id}`);
-                              }}
-                              className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-100 transition-all"
-                              title="View Report"
-                            >
-                              <FaEye />
-                            </button>
+                            <div className="flex items-center justify-center gap-2">
+                                {/* View Report */}
+                                <button 
+                                  onClick={(e) => {
+                                     e.stopPropagation();
+                                     navigate(`/invoice/${rpt._id}`);
+                                  }}
+                                  className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-100 transition-all"
+                                  title="View Report"
+                                >
+                                  <FaEye />
+                                </button>
+                                
+                                {/* Front Desk: Ready/Deliver Actions */}
+                                {isFrontDesk && String(rpt.testStatus||"").toLowerCase() === 'complete' && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleStatusUpdate(rpt, 'ready');
+                                        }}
+                                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-100 transition-all"
+                                        title="Mark as Ready to Deliver"
+                                    >
+                                        <FaBoxOpen />
+                                    </button>
+                                )}
+                                {isFrontDesk && (String(rpt.testStatus||"").toLowerCase() === 'ready to deliver' || String(rpt.testStatus).toLowerCase() === 'ready_to_deliver') && (
+                                     <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleStatusUpdate(rpt, 'deliver');
+                                        }}
+                                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-emerald-600 hover:bg-emerald-50 border border-transparent hover:border-emerald-100 transition-all"
+                                        title="Mark as Delivered"
+                                    >
+                                        <FaTruck />
+                                    </button>
+                                )}
+                            </div>
                          </td>
                       </tr>
                     );

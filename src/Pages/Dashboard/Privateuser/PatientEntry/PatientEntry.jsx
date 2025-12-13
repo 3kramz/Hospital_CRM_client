@@ -216,9 +216,19 @@ const PatientEntry = () => {
   };
 
   // === Patient Search (debounced) ===
+  // === Patient Search (debounced) ===
   const searchPatients = useCallback(
     debounce(async (query) => {
       if (!query.trim()) {
+         setSuggestions([]);
+         return;
+      }
+      try {
+        const { data } = await axiosSecure.get(`/patients/search?q=${query}`);
+        setSuggestions(data);
+      } catch (err) {
+        console.error("Error searching patients:", err);
+        setSuggestions([]);
       }
     }, 400),
     [axiosSecure]
@@ -359,6 +369,7 @@ const PatientEntry = () => {
   };
 
   const handleSaveAndPrint = async () => {
+    // alert("Debug: Starting Save");
     const { name, age, gender, phone, address } = patientInfo;
 
     if (!name || !age || !gender || !phone || !address) {
@@ -373,6 +384,7 @@ const PatientEntry = () => {
 
     try {
       // Step 1: Save patient
+      // alert("Debug: Saving Patient...");
       const { data: patientRes } = await axiosSecure.post("/patients/save", {
         patientInfo,
       });
@@ -381,6 +393,7 @@ const PatientEntry = () => {
         alert("Failed to save patient: " + patientRes.error);
         return;
       }
+      // alert("Debug: Patient Saved. PID: " + patientRes.pid);
 
       const pid = patientRes.pid;
       const previousDueFromBackend = patientRes.previousDue || 0;
@@ -398,11 +411,15 @@ const PatientEntry = () => {
         updatedDue,
         grandTotal: finalTotal,
       };
+      
+      // alert("Debug: Saving Bill to /tests/save-patient-bill...");
 
       const { data: billRes } = await axiosSecure.post(
-        "/save-patient-bill",
+        "/tests/save-patient-bill",
         billData
       );
+      
+      // alert("Debug: Bill Response received");
 
       if (billRes.success) {
         alert("Bill saved successfully.");

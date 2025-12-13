@@ -19,6 +19,7 @@ import LabBoard from "../Pages/Dashboard/Privateuser/LabBoard/LabBoard";
 import RoleRoute from "./RoleRoute";
 import DashboardHomeRedirect from "../Pages/Dashboard/DashboardHomeRedirect";
 import DashboardHome from "../Pages/Dashboard/DashboardHome";
+import Recovery from "../Pages/Recovery/Recovery";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -42,16 +43,12 @@ export const router = createBrowserRouter([
           },
           {
             path: "dashboard-home",
-            element: (
-              <RoleRoute allowedRoles={['admin']}>
-                 <DashboardHome />
-              </RoleRoute>
-            ),
+            element: <DashboardHome />,
           },
           {
             path: "patient-entry",
             element: (
-              <RoleRoute allowedRoles={['front_desk']}>
+              <RoleRoute allowedRoles={['front_desk', 'admin']}>
                 <PatientEntry />
               </RoleRoute>
             ),
@@ -59,7 +56,7 @@ export const router = createBrowserRouter([
            {
             path: "assign-test",
             element: (
-              <RoleRoute allowedRoles={['front_desk']}>
+              <RoleRoute allowedRoles={['front_desk', 'admin']}>
                 <AssignTest />
               </RoleRoute>
             ),
@@ -103,6 +100,10 @@ export const router = createBrowserRouter([
   {
     path: "/forget-password",
     element: <ForgetPassword />,
+  },
+  {
+    path: "/recovery",
+    element: <Recovery />,
   },
   {
     path: "*",
