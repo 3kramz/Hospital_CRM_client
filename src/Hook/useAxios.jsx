@@ -5,7 +5,7 @@ const LOCAL_URL = "http://localhost:5000";
 const REMOTE_URL = "https://hospitam-crm-server.vercel.app";
 
 export const axiosPublic = axios.create({
-  baseURL: LOCAL_URL, // Start with local server
+  baseURL: window.location.hostname.includes("localhost") ? LOCAL_URL : REMOTE_URL,
 });
 
 // Failover Interceptor
@@ -15,10 +15,11 @@ axiosPublic.interceptors.response.use(
   },
   async (error) => {
     const originalRequest = error.config;
-
+    
     // Check if it's a network error (server down) and we haven't retried yet
+    // ERR_NETWORK is the standard Axios error code for connection refused/network down
     if (
-      error.message === "Network Error" &&
+      (error.code === "ERR_NETWORK" || error.message === "Network Error") &&
       !originalRequest._retry &&
       axiosPublic.defaults.baseURL === LOCAL_URL
     ) {
