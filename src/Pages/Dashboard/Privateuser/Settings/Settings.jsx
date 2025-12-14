@@ -83,9 +83,20 @@ const Settings = () => {
         const secondaryAuth = getAuth(secondaryApp);
         await signInWithEmailAndPassword(secondaryAuth, currentUser.email, adminPassword);
         
-        const { email, password, name, role, department } = data;
+        const { email, password, name, roles, departments } = data;
         await createUserWithEmailAndPassword(secondaryAuth, email, password);
-        const userInfo = { name, email, role, department: department || "", createdAt: new Date().toISOString() };
+        
+        // Use first role/department if single selection or maintain old structure for primary
+        // But backend now supports roles/departments arrays. We send arrays.
+        const userInfo = { 
+            name, 
+            email, 
+            roles: roles || [], 
+            role: roles && roles.length > 0 ? roles[0] : "", // Backward compat
+            departments: departments || [], 
+            department: departments && departments.length > 0 ? departments[0] : "", // Backward compat
+            createdAt: new Date().toISOString() 
+        };
         await axiosSecure.post("/users", userInfo);
         await secondaryAuth.signOut(); 
         
@@ -106,11 +117,35 @@ const Settings = () => {
 
   const handleUpdateRole = async (e) => {
       e.preventDefault();
-      const newRole = e.target.role.value;
+      
+      // Gather Roles
+      const roleCheckboxes = e.target.roles;
+      let newRoles = [];
+      if (roleCheckboxes instanceof RadioNodeList) {
+          roleCheckboxes.forEach(cb => { if(cb.checked) newRoles.push(cb.value) });
+      } else if (roleCheckboxes && roleCheckboxes.checked) {
+          newRoles.push(roleCheckboxes.value);
+      }
+
+      // Gather Departments
+      const deptCheckboxes = e.target.departments;
+      let newDepts = [];
+      if (deptCheckboxes instanceof RadioNodeList) {
+        deptCheckboxes.forEach(cb => { if(cb.checked) newDepts.push(cb.value) });
+      } else if (deptCheckboxes && deptCheckboxes.checked) {
+          newDepts.push(deptCheckboxes.value);
+      }
+
       const email = editingUser.email;
       try {
-          await axiosSecure.patch("/users/role", { email, role: newRole });
-           Swal.fire({ icon: 'success', title: 'Role Updated', timer: 1500, showConfirmButton: false });
+          await axiosSecure.patch("/users/role", { 
+              email, 
+              roles: newRoles, 
+              role: newRoles[0] || "", // Compat
+              departments: newDepts,
+              department: newDepts[0] || "" // Compat 
+          });
+           Swal.fire({ icon: 'success', title: 'Access Updated', timer: 1500, showConfirmButton: false });
         setIsEditModalOpen(false);
         setEditingUser(null);
         fetchData();
@@ -374,14 +409,20 @@ const Settings = () => {
                         </div>
                     </td>
                     <td>
-                        <span className={`badge ${user.role === 'admin' ? 'badge-primary' : 'badge-ghost'} font-medium`}>
-                            {user.role}
-                        </span>
-                        <button onClick={() => openEditModal(user)} className="ml-2 text-gray-400 hover:text-info transition-colors btn btn-ghost btn-xs btn-circle" title="Edit Role">
+                        <div className="flex flex-wrap gap-1">
+                            {(user.roles || [user.role]).map((r, i) => (
+                                <span key={i} className={`badge ${r === 'admin' ? 'badge-primary' : 'badge-ghost'} font-medium`}>
+                                    {r}
+                                </span>
+                            ))}
+                        </div>
+                        <button onClick={() => openEditModal(user)} className="mt-1 text-gray-400 hover:text-info transition-colors btn btn-ghost btn-xs btn-circle" title="Edit Access">
                             <FaEdit />
                         </button>
                     </td>
-                    <td className="text-gray-500 text-sm font-medium">{user.department || '-'}</td>
+                    <td className="text-gray-500 text-sm font-medium">
+                        {(user.departments || (user.department ? [user.department] : [])).join(', ') || '-'}
+                    </td>
                     <td className="text-right pr-6">
                         <div className="join">
                             <button onClick={() => handleResetPassword(user.email)} className="btn btn-xs join-item btn-outline" title="Reset Password">Reset</button>
@@ -403,22 +444,48 @@ const Settings = () => {
       {isEditModalOpen && editingUser && (
         <div className="modal modal-open backdrop-blur-sm">
           <div className="modal-box shadow-2xl rounded-2xl">
-            <h3 className="font-bold text-xl mb-1 text-gray-800">Edit User Role</h3>
-            <p className="mb-6 text-sm text-gray-500">Updating role for <span className="font-semibold text-primary">{editingUser.name}</span></p>
+            <h3 className="font-bold text-xl mb-1 text-gray-800">Edit User Access</h3>
+            <p className="mb-6 text-sm text-gray-500">Updating access for <span className="font-semibold text-primary">{editingUser.name}</span></p>
             <form onSubmit={handleUpdateRole}>
-                <div className="form-control mb-6">
-                    <label className="label"><span className="label-text font-medium">Select New Role</span></label>
-                    <select name="role" defaultValue={editingUser.role} className="select select-bordered w-full focus:ring-primary/20">
-                        <option value="doctor">Doctor</option>
-                        <option value="admin">Admin</option>
-                        <option value="front_desk">Front Desk</option>
-                        <option value="lab_expert">Lab Expert</option>
-                        <option value="sample_collection">Sample Collection</option>
-                    </select>
+                <div className="form-control mb-4">
+                    <label className="label"><span className="label-text font-medium">Roles</span></label>
+                    <div className="flex flex-wrap gap-2">
+                        {['doctor', 'admin', 'front_desk', 'lab_expert', 'sample_collection'].map(role => (
+                            <label key={role} className="flex items-center gap-2 cursor-pointer border p-2 rounded-lg hover:bg-gray-50">
+                                <input 
+                                    type="checkbox" 
+                                    name="roles" 
+                                    value={role} 
+                                    defaultChecked={(editingUser.roles || [editingUser.role]).includes(role)} 
+                                    className="checkbox checkbox-primary checkbox-xs" 
+                                />
+                                <span className="text-sm capitalize">{role.replace('_', ' ')}</span>
+                            </label>
+                        ))}
+                    </div>
                 </div>
+
+                <div className="form-control mb-6">
+                    <label className="label"><span className="label-text font-medium">Departments</span></label>
+                    <div className="flex flex-wrap gap-2">
+                        {['Hematology', 'Biochemistry', 'Microbiology', 'Radiology', 'Urine/Stool'].map(dept => (
+                            <label key={dept} className="flex items-center gap-2 cursor-pointer border p-2 rounded-lg hover:bg-gray-50">
+                                <input 
+                                    type="checkbox" 
+                                    name="departments" 
+                                    value={dept} 
+                                    defaultChecked={(editingUser.departments || [editingUser.department]).includes(dept)} 
+                                    className="checkbox checkbox-secondary checkbox-xs" 
+                                />
+                                <span className="text-sm">{dept}</span>
+                            </label>
+                        ))}
+                    </div>
+                </div>
+
                 <div className="modal-action">
                     <button type="button" className="btn btn-ghost rounded-xl" onClick={() => setIsEditModalOpen(false)}>Cancel</button>
-                    <button type="submit" className="btn btn-primary rounded-xl px-6">Update Role</button>
+                    <button type="submit" className="btn btn-primary rounded-xl px-6">Update Access</button>
                 </div>
             </form>
           </div>
@@ -443,26 +510,29 @@ const Settings = () => {
                 </div>
                 
                 <div className="form-control">
-                    <label className="label"><span className="label-text font-medium">Role</span></label>
-                    <select {...register("role", { required: true })} className="select select-bordered w-full">
-                        <option value="doctor">Doctor</option>
-                        <option value="admin">Admin</option>
-                        <option value="front_desk">Front Desk</option>
-                        <option value="lab_expert">Lab Expert</option>
-                        <option value="sample_collection">Sample Collection</option>
-                    </select>
+                    <label className="label"><span className="label-text font-medium">Roles (Select Multiple)</span></label>
+                    <div className="flex flex-wrap gap-4 p-3 border rounded-xl bg-gray-50">
+                        {['doctor', 'admin', 'front_desk', 'lab_expert', 'sample_collection'].map(role => (
+                             <label key={role} className="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" value={role} {...register("roles")} className="checkbox checkbox-primary checkbox-sm" />
+                                <span className="capitalize">{role.replace('_', ' ')}</span>
+                            </label>
+                        ))}
+                    </div>
                 </div>
+
                 <div className="form-control">
-                    <label className="label"><span className="label-text font-medium">Department (Optional)</span></label>
-                    <select {...register("department")} className="select select-bordered w-full">
-                        <option value="">None</option>
-                        <option value="Hematology">Hematology</option>
-                        <option value="Biochemistry">Biochemistry</option>
-                        <option value="Microbiology">Microbiology</option>
-                        <option value="Radiology">Radiology</option>
-                        <option value="Urine/Stool">Urine/Stool</option>
-                    </select>
+                    <label className="label"><span className="label-text font-medium">Departments (Select Multiple)</span></label>
+                    <div className="flex flex-wrap gap-4 p-3 border rounded-xl bg-gray-50">
+                         {['Hematology', 'Biochemistry', 'Microbiology', 'Radiology', 'Urine/Stool'].map(dept => (
+                             <label key={dept} className="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" value={dept} {...register("departments")} className="checkbox checkbox-secondary checkbox-sm" />
+                                <span>{dept}</span>
+                            </label>
+                        ))}
+                    </div>
                 </div>
+
                  <div className="form-control">
                     <label className="label"><span className="label-text font-medium">Password</span></label>
                     <input type="password" {...register("password", { required: true, minLength: 6 })} className="input input-bordered w-full" placeholder="••••••••"/>

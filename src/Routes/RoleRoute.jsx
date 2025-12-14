@@ -17,23 +17,22 @@ const RoleRoute = ({ children, allowedRoles }) => {
     }
 
     if (user && userData) {
-        const userRole = userData.role?.toLowerCase();
-        if (allowedRoles.includes(userRole)) {
+        // Support array of roles or fallback to single role string
+        const userRoles = (userData.roles ? userData.roles : [userData.role]).map(r => r?.toLowerCase());
+        
+        // Check if ANY of the user's roles matches ANY of the allowed roles
+        const hasAccess = userRoles.some(role => allowedRoles.includes(role));
+
+        if (hasAccess) {
             return children;
+        } else {
+             console.warn("Access Denied. User Roles:", userRoles, "Allowed:", allowedRoles);
+             // Redirect to dashboard home instead of logging out
+             return <Navigate to="/dashboard/dashboard-home" replace />;
         }
     }
 
-    // Default: Redirect to dashboard index or login if not found?
-    // If authenticated but wrong role, maybe show a "Forbidden" page or redirect.
-    // For now, redirecting to login like AdminRoute.
-    if (user && userData) {
-        const userRole = userData.role?.toLowerCase();
-        if (!allowedRoles.includes(userRole)) {
-            logOut(); 
-            return <Navigate to="/" state={{ from: location }} replace />;
-        }
-    }
-
+    // Not authenticated or loading
     return <Navigate to="/" state={{ from: location }} replace />;
 };
 

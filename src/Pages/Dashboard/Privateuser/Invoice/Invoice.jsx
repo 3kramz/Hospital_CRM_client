@@ -47,7 +47,7 @@ export default function Invoice() {
 
 
   useEffect(() => {
-    // console.log("InvoiceRef changed:", invoiceRef.current);
+
   }, [invoiceData]);
 
   const handlePrint = useReactToPrint({

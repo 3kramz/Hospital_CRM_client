@@ -14,8 +14,18 @@ const DashboardHomeRedirect = () => {
     }
 
     if (!userData) return <Navigate to="/" replace />;
+    
+    const userRoles = (userData?.roles || (userData?.role ? [userData.role] : [])).map(r => r?.toLowerCase());
 
-    // If everyone has access to dashboard-home, we can default there.
+    if (userRoles.includes('admin') || userRoles.includes('front_desk')) {
+         return <Navigate to="dashboard-home" replace />;
+    }
+
+    if (userRoles.includes('lab_expert') || userRoles.includes('sample_collection')) {
+         return <Navigate to="lab-board" replace />;
+    }
+
+    // Default fallback
     return <Navigate to="dashboard-home" replace />;
 };
 

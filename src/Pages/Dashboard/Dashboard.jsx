@@ -49,11 +49,12 @@ const Dashboard = () => {
     navigate("/");
   };
 
-  const userRole = userData?.role?.toLowerCase();
-  const isAdmin = userRole === 'admin';
-  const isFrontDesk = userRole === 'front_desk';
-  const isLabExpert = userRole === 'lab_expert';
-  const isSampleCollection = userRole === 'sample_collection';
+  const userRoles = (userData?.roles || (userData?.role ? [userData.role] : [])).map(r => r?.toLowerCase());
+  
+  const isAdmin = userRoles.includes('admin');
+  const isFrontDesk = userRoles.includes('front_desk');
+  const isLabExpert = userRoles.includes('lab_expert');
+  const isSampleCollection = userRoles.includes('sample_collection');
 
   const navItems = [];
 
@@ -73,8 +74,10 @@ const Dashboard = () => {
     navItems.push({ to: "settings", icon: <FiSettings />, label: "Settings" });
   }
   
-  // Everyone gets Overview
-  navItems.unshift({ to: "dashboard-home", icon: <FiActivity />, label: "Overview" });
+  // Overview - Admin & Front Desk Only
+  if (isAdmin || isFrontDesk) {
+    navItems.unshift({ to: "dashboard-home", icon: <FiActivity />, label: "Overview" });
+  }
 
   // Lab Stuff
   if (isLabExpert || isSampleCollection) {
@@ -188,7 +191,7 @@ const Dashboard = () => {
           </button>
       
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 cursor-help" title={userData?.email}>
             <div className="text-right hidden sm:block">
               <p className="text-sm font-semibold text-gray-800">
                 {userData?.name || "User"}

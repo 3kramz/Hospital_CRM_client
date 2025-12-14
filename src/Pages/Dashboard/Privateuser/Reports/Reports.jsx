@@ -2,10 +2,11 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import useAxiosSecure from "../../../../Hook/useAxiosSecure";
 import useUserData from "../../../../Hook/useUserData";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FaSearch, FaFileInvoiceDollar, FaEye, FaFilter, FaSpinner, FaSort, FaVials, FaClipboardList, FaCheckCircle, FaFlask, FaTruck, FaBoxOpen } from "react-icons/fa";
+import { FaSearch, FaFileInvoiceDollar, FaEye, FaFilter, FaSpinner, FaSort, FaVials, FaClipboardList, FaCheckCircle, FaFlask, FaFileMedical, FaHandHoldingMedical } from "react-icons/fa";
 import { FiCheckCircle } from "react-icons/fi";
 import HospitalLoader from "../../../../Components/Loading/HospitalLoader";
-import Swal from "sweetalert2";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Reports = () => {
   const [reports, setReports] = useState([]);
@@ -22,6 +23,7 @@ const Reports = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
   
   const pageSize = 20;
   const navigate = useNavigate();
@@ -70,20 +72,19 @@ const Reports = () => {
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [axiosSecure, currentPage, searchText, paymentStatusFilter, testStatusFilter, sortField, sortOrder, startDate, endDate]);
+  }, [axiosSecure, currentPage, searchText, paymentStatusFilter, testStatusFilter, sortField, sortOrder, startDate, endDate, refreshKey]);
 
+  /* Dynamic stats state */
   const [stats, setStats] = useState({
     totalTests: 0,
-    totalCompleted: 0,
-    totalRunning: 0,
-    totalAssigned: 0
+    statusCounts: {} // Dynamic mappings: { "assigned": 10, "collecting_sample": 5, ... }
   });
 
   useEffect(() => {
-    axiosSecure.get('/save-patient-bill/stats')
+    axiosSecure.get('/tests/stats')
       .then(res => setStats(res.data))
       .catch(err => console.error("Failed to fetch stats:", err));
-  }, [axiosSecure]);
+  }, [axiosSecure, refreshKey]);
 
 
   const handleSearchChange = (e) => {
@@ -152,8 +153,11 @@ const Reports = () => {
   };
 
   /* Helper to render status with icons */
+  /* Helper to render status with icons */
   const renderTestStatus = (status) => {
-    const normalizedStatus = String(status || "Assigned").toLowerCase();
+    const normalize = (str) => String(str || "assigned").toLowerCase();
+    const normalizedStatus = normalize(status);
+    const displayStatus = String(status || "Assigned").replace(/_/g, " ");
 
     if (normalizedStatus === "complete") {
       return (
@@ -161,16 +165,28 @@ const Reports = () => {
           <FiCheckCircle className="text-base" /> Done
         </span>
       );
-    } else if (normalizedStatus === "running") {
+    } else if (normalizedStatus === "running" || normalizedStatus === "test_running") {
       return (
         <span className="text-purple-600 font-medium text-sm flex items-center justify-center gap-1.5 bg-purple-50 px-3 py-1 rounded-full border border-purple-100/50">
            <FaSpinner className="animate-spin text-base" /> Running
         </span>
       );
+    } else if (normalizedStatus === "collecting_sample") {
+      return (
+        <span className="text-orange-600 font-medium text-sm flex items-center justify-center gap-1.5 bg-orange-50 px-3 py-1 rounded-full border border-orange-100/50">
+           <FaFlask className="text-base" /> Collecting
+        </span>
+      );
+    } else if (normalizedStatus === "sample_collected") {
+       return (
+        <span className="text-indigo-600 font-medium text-sm flex items-center justify-center gap-1.5 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100/50">
+           <FaVials className="text-base" /> Collected
+        </span>
+      );
     } else if (normalizedStatus === "ready to deliver" || normalizedStatus === "ready_to_deliver") {
       return (
         <span className="text-blue-600 font-medium text-sm flex items-center justify-center gap-1.5 bg-blue-50 px-3 py-1 rounded-full border border-blue-100/50">
-           <FaBoxOpen className="text-base" /> Ready
+           <FaFileMedical className="text-base" /> Ready
         </span>
       );
     } else if (normalizedStatus === "delivered") {
@@ -180,10 +196,10 @@ const Reports = () => {
         </span>
       );
     } else {
-      // Assigned or others
+      // Default / Assigned
       return (
-        <span className="text-amber-600 font-medium text-sm flex items-center justify-center gap-1.5 bg-amber-50 px-3 py-1 rounded-full border border-amber-100/50">
-           <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> Assigned
+        <span className="text-amber-600 font-medium text-sm flex items-center justify-center gap-1.5 bg-amber-50 px-3 py-1 rounded-full border border-amber-100/50 capitalize">
+           <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> {displayStatus}
         </span>
       );
     }
@@ -203,24 +219,21 @@ const Reports = () => {
         });
         
         if (res.data.success) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Status Updated',
-                text: res.data.message,
-                timer: 1500,
-                showConfirmButton: false
-            });
-            // Refresh list - simpler to just clear and let effect reload
-            setReports([]);
-            setCurrentPage(1); // will trigger reload
+            toast.success(res.data.message);
+            
+            // Optimistic Update: Update local state immediately without reloading
+            setReports(prevReports => prevReports.map(item => 
+                item._id === rpt._id ? { ...item, testStatus: newStatus } : item
+            ));
+
+            // Silently update stats
+            axiosSecure.get('/tests/stats')
+                .then(res => setStats(res.data))
+                .catch(err => console.error("Failed to update stats silently:", err));
         }
     } catch (err) {
         console.error("Status update failed", err);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: err.response?.data?.error || "Failed to update status"
-        });
+        toast.error(err.response?.data?.error || "Failed to update status");
     }
   };
 
@@ -251,7 +264,7 @@ const Reports = () => {
                 <FaFileInvoiceDollar />
              </div>
              <div>
-               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Reports</p>
+               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Invoices</p>
                <p className="text-2xl font-bold text-gray-900">{totalCount}</p>
              </div>
           </div>
@@ -259,7 +272,7 @@ const Reports = () => {
         
         {/* Stats Section with Modern UI */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-             {/* Total Tests */}
+             {/* Total Tests Card (Always Visible) */}
              <div 
                 onClick={() => handleStatClick("")}
                 className={`relative overflow-hidden bg-white p-5 rounded-2xl shadow-sm border transition-all duration-300 cursor-pointer group hover:-translate-y-1 hover:shadow-lg ${testStatusFilter === "" ? 'ring-2 ring-blue-500 border-blue-500' : 'border-gray-100 hover:border-blue-200'}`}
@@ -276,56 +289,57 @@ const Reports = () => {
                 <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-blue-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
              </div>
 
-             {/* Running Tests */}
-             <div 
-                onClick={() => handleStatClick("Running")}
-                className={`relative overflow-hidden bg-white p-5 rounded-2xl shadow-sm border transition-all duration-300 cursor-pointer group hover:-translate-y-1 hover:shadow-lg ${testStatusFilter === "Running" ? 'ring-2 ring-purple-500 border-purple-500' : 'border-gray-100 hover:border-purple-200'}`}
-             >
-                <div className="flex items-center justify-between z-10 relative">
-                   <div>
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Running</p>
-                      <h3 className="text-3xl font-extrabold text-gray-800">{stats.totalRunning}</h3>
-                   </div>
-                   <div className="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-sm">
-                      <FaFlask className="text-xl group-hover:animate-pulse" />
-                   </div>
-                </div>
-                <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-purple-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
-             </div>
+             {/* Dynamic Status Cards */}
+             {Object.entries(stats.statusCounts || {}).map(([key, count]) => {
+                const normalizedKey = key.toLowerCase();
+                // Determine styling based on key
+                let colorClass = "blue"; // default
+                let Icon = FaClipboardList; // default
 
-             {/* Assigned Tests */}
-             <div 
-                onClick={() => handleStatClick("Assigned")}
-                className={`relative overflow-hidden bg-white p-5 rounded-2xl shadow-sm border transition-all duration-300 cursor-pointer group hover:-translate-y-1 hover:shadow-lg ${testStatusFilter === "Assigned" ? 'ring-2 ring-amber-500 border-amber-500' : 'border-gray-100 hover:border-amber-200'}`}
-             >
-                <div className="flex items-center justify-between z-10 relative">
-                   <div>
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Assigned</p>
-                      <h3 className="text-3xl font-extrabold text-gray-800">{stats.totalAssigned}</h3>
-                   </div>
-                   <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-sm">
-                      <FaClipboardList className="text-xl" />
-                   </div>
-                </div>
-                 <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-amber-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
-             </div>
+                if (normalizedKey.includes('complete')) { colorClass = "emerald"; Icon = FaCheckCircle; }
+                else if (normalizedKey.includes('run')) { colorClass = "purple"; Icon = FaSpinner; }
+                else if (normalizedKey.includes('assign')) { colorClass = "amber"; Icon = FaClipboardList; }
+                else if (normalizedKey.includes('collecting')) { colorClass = "orange"; Icon = FaFlask; }
+                else if (normalizedKey.includes('collected')) { colorClass = "indigo"; Icon = FaVials; }
+                else if (normalizedKey.includes('ready')) { colorClass = "cyan"; Icon = FaFileMedical; }
+                else if (normalizedKey.includes('deliver')) { colorClass = "gray"; Icon = FaCheckCircle; }
 
-             {/* Completed Tests */}
-             <div 
-                onClick={() => handleStatClick("Complete")}
-                className={`relative overflow-hidden bg-white p-5 rounded-2xl shadow-sm border transition-all duration-300 cursor-pointer group hover:-translate-y-1 hover:shadow-lg ${testStatusFilter === "Complete" ? 'ring-2 ring-emerald-500 border-emerald-500' : 'border-gray-100 hover:border-emerald-200'}`}
-             >
-                <div className="flex items-center justify-between z-10 relative">
-                   <div>
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Completed</p>
-                      <h3 className="text-3xl font-extrabold text-gray-800">{stats.totalCompleted}</h3>
-                   </div>
-                   <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-sm">
-                      <FaCheckCircle className="text-xl" />
-                   </div>
-                </div>
-                <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-emerald-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
-             </div>
+                // Tailwind dynamic classes must be full strings or safelisted. Using style object or specific map is safer, but let's try template literals which work if classes are standard.
+                // We'll map color names to specific classes to avoid purgedcss issues if not safelisted.
+                const colorMap = {
+                    emerald: { border: 'border-emerald-500', ring: 'ring-emerald-500', bg: 'bg-emerald-50', text: 'text-emerald-600', hoverborder: 'hover:border-emerald-200' },
+                    purple: { border: 'border-purple-500', ring: 'ring-purple-500', bg: 'bg-purple-50', text: 'text-purple-600', hoverborder: 'hover:border-purple-200' },
+                    amber: { border: 'border-amber-500', ring: 'ring-amber-500', bg: 'bg-amber-50', text: 'text-amber-600', hoverborder: 'hover:border-amber-200' },
+                    orange: { border: 'border-orange-500', ring: 'ring-orange-500', bg: 'bg-orange-50', text: 'text-orange-600', hoverborder: 'hover:border-orange-200' },
+                    indigo: { border: 'border-indigo-500', ring: 'ring-indigo-500', bg: 'bg-indigo-50', text: 'text-indigo-600', hoverborder: 'hover:border-indigo-200' },
+                    cyan: { border: 'border-cyan-500', ring: 'ring-cyan-500', bg: 'bg-cyan-50', text: 'text-cyan-600', hoverborder: 'hover:border-cyan-200' },
+                    gray: { border: 'border-gray-500', ring: 'ring-gray-500', bg: 'bg-gray-50', text: 'text-gray-600', hoverborder: 'hover:border-gray-200' },
+                    blue: { border: 'border-blue-500', ring: 'ring-blue-500', bg: 'bg-blue-50', text: 'text-blue-600', hoverborder: 'hover:border-blue-200' },
+                };
+                const theme = colorMap[colorClass] || colorMap.blue;
+                const isActive = testStatusFilter.toLowerCase() === key.toLowerCase() || (key === 'assigned' && testStatusFilter === 'Assigned'); // looser match?
+                // Actually the API returns keys as is (lowercase from manual check usually, but let's trust the key)
+                // The filter logic expects what? The backend filter seems to use regex or string match.
+                
+                return (
+                 <div 
+                    key={key}
+                    onClick={() => handleStatClick(key)}
+                    className={`relative overflow-hidden bg-white p-5 rounded-2xl shadow-sm border transition-all duration-300 cursor-pointer group hover:-translate-y-1 hover:shadow-lg ${testStatusFilter.toLowerCase() === key.toLowerCase() ? `ring-2 ${theme.ring} ${theme.border}` : `border-gray-100 ${theme.hoverborder}`}`}
+                 >
+                    <div className="flex items-center justify-between z-10 relative">
+                       <div>
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{key.replace(/_/g, ' ')}</p>
+                          <h3 className="text-3xl font-extrabold text-gray-800">{count}</h3>
+                       </div>
+                       <div className={`w-12 h-12 ${theme.bg} rounded-2xl flex items-center justify-center ${theme.text} group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-sm`}>
+                          <Icon className={`text-xl ${normalizedKey.includes('run') ? 'animate-spin' : ''}`} />
+                       </div>
+                    </div>
+                    <div className={`absolute -bottom-6 -right-6 w-24 h-24 ${theme.bg} rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl`}></div>
+                 </div>
+                );
+             })}
         </div>
 
         {/* Filters & Actions */}
@@ -524,10 +538,10 @@ const Reports = () => {
                                             e.stopPropagation();
                                             handleStatusUpdate(rpt, 'ready');
                                         }}
-                                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-100 transition-all"
-                                        title="Mark as Ready to Deliver"
+                                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-sm shadow-blue-500/30 transition-all active:scale-95"
+                                        title="Mark Report as Ready"
                                     >
-                                        <FaBoxOpen />
+                                        <FaFileMedical /> Ready
                                     </button>
                                 )}
                                 {isFrontDesk && (String(rpt.testStatus||"").toLowerCase() === 'ready to deliver' || String(rpt.testStatus).toLowerCase() === 'ready_to_deliver') && (
@@ -536,10 +550,10 @@ const Reports = () => {
                                             e.stopPropagation();
                                             handleStatusUpdate(rpt, 'deliver');
                                         }}
-                                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-emerald-600 hover:bg-emerald-50 border border-transparent hover:border-emerald-100 transition-all"
-                                        title="Mark as Delivered"
+                                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-sm shadow-emerald-500/30 transition-all active:scale-95"
+                                        title="Handover Report to Patient"
                                     >
-                                        <FaTruck />
+                                        <FaHandHoldingMedical /> Handover
                                     </button>
                                 )}
                             </div>
@@ -571,6 +585,7 @@ const Reports = () => {
           )}
         </div>
       </div>
+      <ToastContainer position="bottom-right" />
     </div>
   );
 };
