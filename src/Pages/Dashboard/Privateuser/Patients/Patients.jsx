@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import useAxiosSecure from "../../../../Hook/useAxiosSecure";
 import PatientHistory from "./PatientHistory";
 import PatientFilters from "./Components/PatientFilters";
@@ -20,12 +20,19 @@ const Patients = () => {
   const [selectedPid, setSelectedPid] = useState(null);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
-  const fetchPatients = async (reset = false, querySearch = search) => {
+  /* 
+     Using useCallback to ensure fetchPatients identity is stable unless dependencies change.
+     This allows us to safely include it in the useEffect dependency array.
+  */
+  const fetchPatients = React.useCallback(async (reset = false, querySearch = search) => {
     if (loading && !reset) return;
     
     setLoading(true);
     try {
+      // Use the current state 'page' if not resetting. 
+      // Note: Since we add 'page' to dependencies, this function recreates when page changes.
       const currentPage = reset ? 1 : page;
+      
       const { data } = await axiosSecure.get(`/patients/all?page=${currentPage}&limit=20&search=${querySearch}`);
       
       if (reset && querySearch !== searchRef.current) {
@@ -51,7 +58,7 @@ const Patients = () => {
       console.error("Error fetching patients:", err);
       setLoading(false);
     }
-  };
+  }, [page, search, loading, axiosSecure]);
 
   useEffect(() => {
     searchRef.current = search; 
@@ -61,16 +68,17 @@ const Patients = () => {
       fetchPatients(true, search);
     }, 500);
     return () => clearTimeout(delayDebounceFn);
-  }, [search]);
+  }, [search]); // Intentionally omitting fetchPatients to avoid loop, but search is there.
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => {
+        // Lower threshold to 0.1 to trigger earlier
         if (entries[0].isIntersecting && hasMore && !loading) {
           fetchPatients(false);
         }
       },
-      { threshold: 1.0 }
+      { threshold: 0.1 } 
     );
 
     if (observerTarget.current) {
@@ -80,7 +88,7 @@ const Patients = () => {
     return () => {
       if (observerTarget.current) observer.unobserve(observerTarget.current);
     };
-  }, [hasMore, loading]);
+  }, [hasMore, loading, fetchPatients]); // Added fetchPatients to dependencies
 
 
   const handleViewHistory = (pid) => {

@@ -14,7 +14,7 @@ import Reports from "../Pages/Dashboard/Privateuser/Reports/Reports";
 import Patients from "../Pages/Dashboard/Privateuser/Patients/Patients";
 import PublicPatientHistory from "../Pages/Dashboard/Privateuser/Patients/PublicPatientHistory";
 import Settings from "../Pages/Dashboard/Privateuser/Settings/Settings";
-import AdminRoute from "./AdminRoute";
+
 import LabBoard from "../Pages/Dashboard/Privateuser/LabBoard/LabBoard";
 import RoleRoute from "./RoleRoute";
 import DashboardHomeRedirect from "../Pages/Dashboard/DashboardHomeRedirect";
@@ -63,11 +63,11 @@ export const router = createBrowserRouter([
           },
           {
             path: "reports",
-            element: <Reports />, // All logged in users
+            element: <Reports />,  
           },
           {
             path: "patients",
-            element: <Patients />, // All logged in users
+            element: <Patients />, 
           },
           {
             path: "settings",

@@ -17,22 +17,17 @@ const RoleRoute = ({ children, allowedRoles }) => {
     }
 
     if (user && userData) {
-        // Support array of roles or fallback to single role string
         const userRoles = (userData.roles ? userData.roles : [userData.role]).map(r => r?.toLowerCase());
-        
-        // Check if ANY of the user's roles matches ANY of the allowed roles
         const hasAccess = userRoles.some(role => allowedRoles.includes(role));
 
         if (hasAccess) {
             return children;
         } else {
              console.warn("Access Denied. User Roles:", userRoles, "Allowed:", allowedRoles);
-             // Redirect to dashboard home instead of logging out
              return <Navigate to="/dashboard/dashboard-home" replace />;
         }
     }
 
-    // Not authenticated or loading
     return <Navigate to="/" state={{ from: location }} replace />;
 };
 
