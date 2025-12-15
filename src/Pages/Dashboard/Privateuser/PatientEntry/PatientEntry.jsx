@@ -3,11 +3,13 @@ import { debounce } from "lodash";
 import { useLocation } from "react-router-dom";
 import useAxiosSecure from "../../../../Hook/useAxiosSecure";
 import useTests from "../../../../Hook/useTests";
+import useAuth from "../../../../Hook/useAuth";
 import { FiUser, FiCalendar, FiPhone, FiMapPin, FiMail, FiActivity, FiSearch, FiMonitor, FiPrinter, FiTrash2, FiPlusCircle, FiX } from "react-icons/fi";
 
 const PatientEntry = () => {
   const axiosSecure = useAxiosSecure();
   const { testData, loading: testsLoading } = useTests();
+  const { user } = useAuth();
 
   // Patient Info & Search
   const location = useLocation();
@@ -409,7 +411,9 @@ const PatientEntry = () => {
         discounts,
         payment,
         updatedDue,
+        updatedDue,
         grandTotal: finalTotal,
+        enteredBy: user?.displayName || user?.email,
       };
       
       // alert("Debug: Saving Bill to /tests/save-patient-bill...");

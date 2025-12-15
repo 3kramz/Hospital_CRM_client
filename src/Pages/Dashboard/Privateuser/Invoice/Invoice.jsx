@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { axiosPublic } from "../../../../Hook/useAxios";
 import { useReactToPrint } from "react-to-print";
 import InvoiceContent from "./InvoiceContent";
+import useAuth from "../../../../Hook/useAuth";
 
 export default function Invoice() {
   const { groupId } = useParams();
@@ -10,6 +11,7 @@ export default function Invoice() {
   const [invoiceData, setInvoiceData] = useState(null);
   const invoiceRef = useRef(null);
   const buttonContainerRef = useRef(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!groupId) return;
@@ -97,7 +99,7 @@ export default function Invoice() {
           </button>
       </div>
       <div className="w-full max-w-4xl shadow-lg bg-white">
-         <InvoiceContent ref={invoiceRef} invoiceData={invoiceData} />
+         <InvoiceContent ref={invoiceRef} invoiceData={invoiceData} user={user} />
       </div>
     </div>
   );
