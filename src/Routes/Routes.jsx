@@ -19,7 +19,7 @@ import LabBoard from "../Pages/Dashboard/Privateuser/LabBoard/LabBoard";
 import RoleRoute from "./RoleRoute";
 import DashboardHomeRedirect from "../Pages/Dashboard/DashboardHomeRedirect";
 import DashboardHome from "../Pages/Dashboard/DashboardHome";
-import Recovery from "../Pages/Recovery/Recovery";
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -101,10 +101,7 @@ export const router = createBrowserRouter([
     path: "/forget-password",
     element: <ForgetPassword />,
   },
-  {
-    path: "/recovery",
-    element: <Recovery />,
-  },
+
   {
     path: "*",
     element: <NotFound />,
