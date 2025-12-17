@@ -9,6 +9,20 @@ Built with **React 18** and **Vite**, it features a secure, role-based architect
 
 ---
 
+## 🚀 Live Demo & Credentials
+
+Experience the application live: [**Live Demo Link**](https://hoshpital-crm.web.app/)
+
+Use the following credentials to explore different user roles:
+
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Lab Expert** | `lab@gmail.com` | `111111` |
+| **Sample Collection** | `sample_collection@gmail.com` | `111111` |
+| **Front Desk** | `front@gmail.com` | `111111` |
+
+---
+
 ## 🌟 Key Features
 
 ### � Comprehensive Patient Management
