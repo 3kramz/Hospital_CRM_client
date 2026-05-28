@@ -80,31 +80,32 @@ const useLabBoard = ({ activeTab, searchQuery, selectedDepartment, userData }) =
         const isAdmin = userRoles.includes('admin');
 
         // Filter helper
+        const resolveDepartment = (item) => {
+            const fromBill = item.department || "";
+            const fromMaster = getTestData(item.testName).department || "";
+            return (fromBill || fromMaster || "").trim();
+        };
+
         const matchesDepartment = (item) => {
+            const department = resolveDepartment(item);
+            const departmentKey = department.toLowerCase();
+
             // Admin sees all
             if (isAdmin) {
                 if (selectedDepartment === "All") return true;
-                const { department } = getTestData(item.testName);
                 return department === selectedDepartment;
             }
 
             // Role based default filter
             if (userDepts.length > 0) {
-                const { department } = getTestData(item.testName);
                 if (!department) return false;
-
-                // Must be in user's allowed departments
-                if (!userDepts.includes(department.toLowerCase())) return false;
-
-                // Must match UI filter if set
+                if (!userDepts.includes(departmentKey)) return false;
                 if (selectedDepartment !== "All" && department !== selectedDepartment) return false;
-
                 return true;
             }
 
-            // Fallback for demo users without department set
+            // Fallback for users without department restrictions
             if (selectedDepartment === "All") return true;
-            const { department } = getTestData(item.testName);
             return department === selectedDepartment;
         };
 

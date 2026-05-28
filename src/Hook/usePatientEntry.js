@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import useAxiosSecure from './useAxiosSecure';
 import useAuth from './useAuth';
 import usePatientFormLogic from './usePatientFormLogic';
@@ -7,6 +8,9 @@ import useTestSelectionLogic from './useTestSelectionLogic';
 const usePatientEntry = () => {
     const axiosSecure = useAxiosSecure();
     const { user } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const returnTo = location.state?.returnTo || null;
 
     // Billing specific State
     const [payment, setPayment] = useState(0);
@@ -83,9 +87,11 @@ const usePatientEntry = () => {
             if (billRes.success) {
                 alert("Bill saved successfully.");
                 const invoiceId = billRes.groupId || billRes.insertedId || billRes._id;
-                if (invoiceId) {
-                    const url = `${window.location.origin}/invoice/${invoiceId}`;
-                    window.open(url, "_blank", "noopener,noreferrer");
+                if (returnTo) {
+                    // Came from Patients page (Pay Due / Assign Test) — go back, don't open invoice
+                    navigate(returnTo);
+                } else if (invoiceId) {
+                    navigate(`/invoice/${invoiceId}`);
                 } else {
                     alert("Bill saved, but could not open invoice automatically.");
                 }

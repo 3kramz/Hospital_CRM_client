@@ -39,11 +39,15 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <DashboardHomeRedirect />, 
+            element: <DashboardHomeRedirect />,
           },
           {
             path: "dashboard-home",
-            element: <DashboardHome />,
+            element: (
+              <RoleRoute allowedRoles={['admin', 'front_desk']}>
+                <DashboardHome />
+              </RoleRoute>
+            ),
           },
           {
             path: "patient-entry",
@@ -63,11 +67,19 @@ export const router = createBrowserRouter([
           },
           {
             path: "reports",
-            element: <Reports />,  
+            element: (
+              <RoleRoute allowedRoles={['admin', 'front_desk']}>
+                <Reports />
+              </RoleRoute>
+            ),
           },
           {
             path: "patients",
-            element: <Patients />, 
+            element: (
+              <RoleRoute allowedRoles={['admin', 'front_desk']}>
+                <Patients />
+              </RoleRoute>
+            ),
           },
           {
             path: "settings",
@@ -80,7 +92,7 @@ export const router = createBrowserRouter([
           {
             path: "lab-board",
             element: (
-              <RoleRoute allowedRoles={['lab_expert', 'sample_collection']}>
+              <RoleRoute allowedRoles={['lab_expert', 'sample_collection', 'admin']}>
                 <LabBoard />
               </RoleRoute>
             ),
@@ -89,7 +101,11 @@ export const router = createBrowserRouter([
       },
       {
             path: "invoice/:groupId",
-            element: <Invoice />,
+            element: (
+              <PrivateRoute>
+                <Invoice />
+              </PrivateRoute>
+            ),
           },
       {
          path: "patient-history/:pid",

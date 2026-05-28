@@ -7,7 +7,7 @@ const useUser = () => {
     const axiosSecure = useAxiosSecure();
 
     const { data: userData, isPending: isUserLoading, refetch } = useQuery({
-        queryKey: [user?.email, 'userData'],
+        queryKey: [user?.email, 'userProfile'],
         enabled: !!user?.email && !loading,
         queryFn: async () => {
              // Retrieve the full user object from the backend

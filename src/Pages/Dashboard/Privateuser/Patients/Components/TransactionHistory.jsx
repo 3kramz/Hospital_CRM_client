@@ -1,6 +1,8 @@
 import { FiCalendar, FiPrinter } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 const TransactionHistory = ({ history }) => {
+    const navigate = useNavigate();
     if (history.length === 0) {
         return (
             <p className="text-center text-gray-400 py-10 bg-gray-50 rounded-xl italic">
@@ -31,7 +33,7 @@ const TransactionHistory = ({ history }) => {
                         </div>
                         
                         <button 
-                            onClick={() => window.open(`${window.location.origin}/invoice/${invoice._id}`, "_blank")}
+                            onClick={() => navigate(`/invoice/${invoice._id}`)}
                             className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                         >
                             <FiPrinter /> Invoice

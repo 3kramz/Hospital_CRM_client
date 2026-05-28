@@ -1,5 +1,6 @@
 import { FaEye, FaFileMedical, FaHandHoldingMedical } from "react-icons/fa";
 import TestStatusBadge from "./TestStatusBadge";
+import { normalizeTestStatus } from "../../../../../utils/userRoles";
 
 const ReportsTableRow = ({ 
     rpt, 
@@ -14,7 +15,8 @@ const ReportsTableRow = ({
     lastReportElementRef
 }) => {
     const isLastElement = reportsLength === idx + 1;
-    
+    const testStatusKey = normalizeTestStatus(rpt.testStatus);
+
     return (
         <tr 
             ref={isLastElement ? lastReportElementRef : null}
@@ -87,7 +89,7 @@ const ReportsTableRow = ({
                     </button>
                     
                     {/* Front Desk: Ready/Deliver Actions */}
-                    {isFrontDesk && String(rpt.testStatus||"").toLowerCase() === 'complete' && (
+                    {isFrontDesk && testStatusKey === "complete" && (
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -99,7 +101,7 @@ const ReportsTableRow = ({
                             <FaFileMedical /> Ready
                         </button>
                     )}
-                    {isFrontDesk && (String(rpt.testStatus||"").toLowerCase() === 'ready to deliver' || String(rpt.testStatus).toLowerCase() === 'ready_to_deliver') && (
+                    {isFrontDesk && testStatusKey === "ready_to_deliver" && (
                          <button
                             onClick={(e) => {
                                 e.stopPropagation();

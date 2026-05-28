@@ -13,6 +13,7 @@ import { axiosPublic } from "../Hook/useAxios";
 export const AuthContext = createContext(null);
 
 const auth = getAuth(app);
+const TOKEN_REFRESH_MS = 50 * 60 * 1000; // refresh before 1h JWT expiry
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -45,21 +46,34 @@ const AuthProvider = ({ children }) => {
       });
   };
 
+  const refreshBackendToken = async (currentUser) => {
+    if (!currentUser?.email) return;
+
+    const userInfo = { email: currentUser.email };
+    const res = await axiosPublic.post("/jwt", userInfo);
+    if (res.data?.token) {
+      localStorage.setItem("access-token", res.data.token);
+      return;
+    }
+    throw new Error("Backend did not return token");
+  };
+
   useEffect(() => {
+    let refreshInterval;
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
 
       if (currentUser) {
-        // Get token and store client
-        const userInfo = { email: currentUser.email };
-        axiosPublic.post("/jwt", userInfo)
-          .then((res) => {
-            if (res.data.token) {
-              localStorage.setItem("access-token", res.data.token);
-              setLoading(false);
-            } else {
-              setLoading(false);
-            }
+        refreshBackendToken(currentUser)
+          .then(() => {
+            setLoading(false);
+            clearInterval(refreshInterval);
+            refreshInterval = setInterval(() => {
+              refreshBackendToken(currentUser).catch((error) => {
+                console.error("JWT refresh failed", error);
+                localStorage.removeItem("access-token");
+              });
+            }, TOKEN_REFRESH_MS);
           })
           .catch((error) => {
             console.error("JWT token fetch failed", error);
@@ -71,12 +85,16 @@ const AuthProvider = ({ children }) => {
           });
       } else {
         // User logged out
+        clearInterval(refreshInterval);
         localStorage.removeItem("access-token");
         setLoading(false);
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      clearInterval(refreshInterval);
+      unsubscribe();
+    };
   }, []);
 
   const AuthInfo = {

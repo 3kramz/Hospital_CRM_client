@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { axiosPublic } from "../../../../Hook/useAxios";
+import useAxiosSecure from "../../../../Hook/useAxiosSecure";
 import { useReactToPrint } from "react-to-print";
 import InvoiceContent from "./InvoiceContent";
 import useAuth from "../../../../Hook/useAuth";
@@ -8,6 +8,7 @@ import useAuth from "../../../../Hook/useAuth";
 export default function Invoice() {
   const { groupId } = useParams();
   const navigate = useNavigate();
+  const axiosSecure = useAxiosSecure();
   const [invoiceData, setInvoiceData] = useState(null);
   const invoiceRef = useRef(null);
   const buttonContainerRef = useRef(null);
@@ -15,7 +16,7 @@ export default function Invoice() {
 
   useEffect(() => {
     if (!groupId) return;
-    axiosPublic.get(`/tests/${groupId}`)
+    axiosSecure.get(`/tests/${groupId}`)
       .then(res =>setInvoiceData(res.data))
       .catch(err => {
         console.error("Failed to fetch invoice data:", err);

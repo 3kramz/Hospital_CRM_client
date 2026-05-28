@@ -1,4 +1,14 @@
-import { FaSearch, FaFilter } from "react-icons/fa";
+import { FaSearch, FaFilter, FaTimes } from "react-icons/fa";
+
+const STATUS_LABELS = {
+  assigned: "Assigned",
+  collecting_sample: "Collecting Sample",
+  sample_collected: "Sample Collected",
+  test_running: "Running",
+  complete: "Complete",
+  ready_to_deliver: "Ready to Deliver",
+  delivered: "Delivered",
+};
 
 const ReportsFilters = ({
     searchText,
@@ -8,7 +18,9 @@ const ReportsFilters = ({
     endDate,
     onEndDateChange,
     paymentStatusFilter,
-    onPaymentStatusChange
+    onPaymentStatusChange,
+    testStatusFilter,
+    onClearTestStatus
 }) => {
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-1">
@@ -60,13 +72,27 @@ const ReportsFilters = ({
                       className="appearance-none w-full pl-4 pr-10 py-3 bg-gray-50 border-transparent hover:bg-gray-100 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl transition-all duration-200 font-medium text-gray-600 cursor-pointer"
                     >
                       <option value="">All Payments</option>
-                      <option value="Paid">Paid</option>
-                      <option value="Due">Due</option>
+                      <option value="PAID">Paid</option>
+                      <option value="DUE">Due</option>
                     </select>
                     <FaFilter className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs" />
                  </div>
               </div>
            </div>
+        {testStatusFilter && (
+           <div className="flex items-center gap-2 px-3 pb-2 md:pb-0">
+             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold rounded-full">
+               Filtered: {STATUS_LABELS[testStatusFilter.toLowerCase()] || testStatusFilter}
+               <button
+                 onClick={onClearTestStatus}
+                 className="ml-1 hover:text-blue-900 transition-colors"
+                 title="Clear test status filter"
+               >
+                 <FaTimes />
+               </button>
+             </span>
+           </div>
+        )}
         </div>
     );
 };

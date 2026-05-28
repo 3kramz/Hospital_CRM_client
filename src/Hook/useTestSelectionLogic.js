@@ -26,7 +26,14 @@ const useTestSelectionLogic = (paymentRef) => {
         for (const key in obj) {
             const value = obj[key];
             if (Array.isArray(value)) {
-                value.forEach((test) => collected.push({ ...test, dep: parentKey || key }));
+                value.forEach((test) =>
+                    collected.push({
+                        ...test,
+                        name: test.name || test.testName,
+                        department: test.department || test.dep || "",
+                        dep: parentKey || key,
+                    })
+                );
             } else if (typeof value === "object" && value !== null) {
                 collected.push(...collectTests(value, key));
             }

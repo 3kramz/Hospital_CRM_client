@@ -21,9 +21,8 @@ const AdminRoute = ({ children }) => {
     }
 
 
+    // Logged in but not admin — redirect to login, do NOT force logout
     if (user && !isAdmin) {
-        logOut().then(() => {}).catch(err => console.error(err));
-        
         return <Navigate to="/" state={{ from: location }} replace />;
     }
 

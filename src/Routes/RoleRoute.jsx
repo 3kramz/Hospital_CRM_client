@@ -24,7 +24,9 @@ const RoleRoute = ({ children, allowedRoles }) => {
             return children;
         } else {
              console.warn("Access Denied. User Roles:", userRoles, "Allowed:", allowedRoles);
-             return <Navigate to="/dashboard/dashboard-home" replace />;
+             // Redirect lab/sample roles to lab-board; others to dashboard-home
+             const isLabRole = userRoles.some(r => r === 'lab_expert' || r === 'sample_collection');
+             return <Navigate to={isLabRole ? "/dashboard/lab-board" : "/dashboard/dashboard-home"} replace />;
         }
     }
 

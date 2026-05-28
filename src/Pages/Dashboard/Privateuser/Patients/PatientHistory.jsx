@@ -61,7 +61,7 @@ const PatientHistory = ({ pid, onClose }) => {
                     {/* Action Bar */}
                     <div className="flex gap-4">
                        <button 
-                          onClick={() => navigate("/dashboard/patient-entry", { state: { patient: data.patient } })}
+                          onClick={() => navigate("/dashboard/patient-entry", { state: { patient: data.patient, returnTo: "/dashboard/patients" } })}
                           className="flex items-center gap-2 px-6 py-3 bg-secondary text-white rounded-xl font-bold hover:bg-secondary/90 transition-all shadow-lg shadow-secondary/20"
                        >
                           <FiPlusCircle /> Assign New Test
@@ -69,7 +69,7 @@ const PatientHistory = ({ pid, onClose }) => {
                        
                        {(data.patient.dueAmount || 0) > 0 && (
                           <button 
-                             onClick={() => navigate("/dashboard/patient-entry", { state: { patient: data.patient } })}
+                             onClick={() => navigate("/dashboard/patient-entry", { state: { patient: data.patient, returnTo: "/dashboard/patients" } })}
                              className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
                           >
                              <FiCreditCard /> Pay Due

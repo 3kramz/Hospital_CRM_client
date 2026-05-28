@@ -7,6 +7,7 @@ import ReportsHeader from "./Components/ReportsHeader";
 import ReportsStats from "./Components/ReportsStats";
 import ReportsFilters from "./Components/ReportsFilters";
 import ReportsTable from "./Components/ReportsTable";
+import { hasAnyRole, toReportTestStatusLabel } from "../../../../utils/userRoles";
 
 const Reports = () => {
   const [reports, setReports] = useState([]);
@@ -79,10 +80,17 @@ const Reports = () => {
   });
 
   useEffect(() => {
-    axiosSecure.get('/tests/stats')
+    const params = new URLSearchParams();
+    if (startDate) params.set("startDate", startDate);
+    if (endDate) params.set("endDate", endDate);
+    if (searchText) params.set("search", searchText);
+    if (paymentStatusFilter) params.set("status", paymentStatusFilter);
+
+    const query = params.toString() ? `?${params.toString()}` : "";
+    axiosSecure.get(`/tests/stats${query}`)
       .then(res => setStats(res.data))
       .catch(err => console.error("Failed to fetch stats:", err));
-  }, [axiosSecure, refreshKey]);
+  }, [axiosSecure, refreshKey, startDate, endDate, searchText, paymentStatusFilter]);
 
 
   const handleSearchChange = (e) => {
@@ -146,13 +154,23 @@ const Reports = () => {
         if (res.data.success) {
             toast.success(res.data.message);
             
-            // Optimistic Update: Update local state immediately without reloading
-            setReports(prevReports => prevReports.map(item => 
-                item._id === rpt._id ? { ...item, testStatus: newStatus } : item
-            ));
+            // Optimistic update uses same labels as /tests/all-reports aggregation
+            const displayStatus = toReportTestStatusLabel(newStatus);
+            setReports((prevReports) =>
+              prevReports.map((item) =>
+                item._id === rpt._id ? { ...item, testStatus: displayStatus } : item
+              )
+            );
 
-            // Silently update stats
-            axiosSecure.get('/tests/stats')
+            setRefreshKey((k) => k + 1);
+
+            const params = new URLSearchParams();
+            if (startDate) params.set("startDate", startDate);
+            if (endDate) params.set("endDate", endDate);
+            if (searchText) params.set("search", searchText);
+            if (paymentStatusFilter) params.set("status", paymentStatusFilter);
+            const query = params.toString() ? `?${params.toString()}` : "";
+            axiosSecure.get(`/tests/stats${query}`)
                 .then(res => setStats(res.data))
                 .catch(err => console.error("Failed to update stats silently:", err));
         }
@@ -162,7 +180,7 @@ const Reports = () => {
     }
   };
 
-  const isFrontDesk = userData?.role === 'front_desk' || userData?.role === 'admin';
+  const isFrontDesk = hasAnyRole(userData, ["front_desk", "admin"]);
 
   return (
     <div className="bg-gray-50/50 min-h-screen p-6 font-outfit">
@@ -185,6 +203,8 @@ const Reports = () => {
             onEndDateChange={handleEndDateChange}
             paymentStatusFilter={paymentStatusFilter}
             onPaymentStatusChange={handlePaymentStatusChange}
+            testStatusFilter={testStatusFilter}
+            onClearTestStatus={() => handleStatClick("")}
         />
 
         <ReportsTable
