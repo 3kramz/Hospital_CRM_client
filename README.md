@@ -17,6 +17,7 @@ Use the following credentials to explore different user roles:
 
 | Role | Email | Password |
 | :--- | :--- | :--- |
+| **Admin** | `admin@gmail.com` | `111111` |
 | **Lab Expert** | `lab@gmail.com` | `111111` |
 | **Sample Collection** | `sample_collection@gmail.com` | `111111` |
 | **Front Desk** | `front@gmail.com` | `111111` |
