@@ -1,13 +1,11 @@
 import React from 'react';
 import { NavLink } from "react-router-dom";
-import { FiLogOut } from "react-icons/fi";
 
 const DashboardSidebar = ({ 
     isSidebarOpen, 
     isMobile, 
     setIsSidebarOpen, 
     navItems, 
-    handleLogout, 
     location 
 }) => {
     return (
@@ -45,19 +43,6 @@ const DashboardSidebar = ({
                 ))}
             </nav>
 
-            {/* Footer / Logout */}
-            <div className="p-4 border-t border-gray-100">
-                <button
-                    onClick={handleLogout}
-                    className={`
-                    flex items-center gap-3 w-full px-4 py-3 text-red-500 rounded-xl hover:bg-red-50 transition-all
-                    ${!isSidebarOpen && !isMobile ? "justify-center" : ""}
-                    `}
-                >
-                    <FiLogOut className="text-xl" />
-                    {(isSidebarOpen || isMobile) && <span className="font-medium">Logout</span>}
-                </button>
-            </div>
         </aside>
     );
 };

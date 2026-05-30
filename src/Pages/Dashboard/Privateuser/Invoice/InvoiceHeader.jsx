@@ -35,9 +35,9 @@ const InvoiceHeader = ({ invoiceId, _id, createdAt, pid }) => {
         </div>
         
         <div className="text-xs text-gray-500 space-y-1 print:text-[10px] pl-1">
-          <p className="font-medium text-gray-600">Laxipur Mor, Rajshahi, 6000</p>
-          <p>+880 1343 524 436</p>
-          <p>info@webnestsolution.com</p>
+          <p className="font-medium text-gray-600">Ashuganj, Brahmanbaria, Chittagong, Bangladesh</p>
+          <p>+880 1873 917 876</p>
+          <p>smahmud1098@gmail.com</p>
         </div>
       </div>
       <div className="text-right">

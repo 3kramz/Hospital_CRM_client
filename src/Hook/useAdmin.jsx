@@ -1,20 +1,15 @@
-import { useQuery } from "@tanstack/react-query";
 import useAuth from "./useAuth";
-import useAxiosSecure from "./useAxiosSecure";
 
 const useAdmin = () => {
-    const { user, loading } = useAuth();
-    const axiosSecure = useAxiosSecure();
+    // userData is now cached in AuthContext (set during the JWT response),
+    // so we don't need a separate API call here at all.
+    const { userData, loading } = useAuth();
 
-    const { data: isAdmin, isPending: isAdminLoading } = useQuery({
-        queryKey: [user?.email, 'isAdmin'],
-        enabled: !!user?.email && !loading, // Wait for auth to be ready
-        queryFn: async () => {
-             const res = await axiosSecure.get(`/users/user/${user.email}`);
-             const roles = res.data?.roles || (res.data?.role ? [res.data.role] : []);
-             return roles.map(r => String(r).toLowerCase()).includes('admin');
-        }
-    })
+    const roles = (userData?.roles || (userData?.role ? [userData.role] : []))
+        .map((r) => String(r).toLowerCase());
+
+    const isAdmin = roles.includes("admin");
+    const isAdminLoading = loading || (!userData && !loading === false);
 
     return [isAdmin, isAdminLoading];
 };

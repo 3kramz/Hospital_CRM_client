@@ -124,7 +124,6 @@ const Dashboard = () => {
         isMobile={isMobile}
         setIsSidebarOpen={setIsSidebarOpen}
         navItems={navItems}
-        handleLogout={handleLogout}
         location={location}
       />
 
@@ -135,6 +134,7 @@ const Dashboard = () => {
             isSidebarOpen={isSidebarOpen}
             setIsSidebarOpen={setIsSidebarOpen}
             userData={userData}
+            handleLogout={handleLogout}
         />
 
         {/* Main Scrollable Area */}

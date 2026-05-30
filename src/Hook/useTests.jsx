@@ -1,51 +1,41 @@
-
-import { useEffect, useState } from 'react';
-import useAxiosSecure from './useAxiosSecure';
+import { useQuery } from "@tanstack/react-query";
+import useAxiosSecure from "./useAxiosSecure";
 
 const useTests = () => {
-  const [testData, setTestData] = useState({});
-  const [loading, setLoading] = useState(true);
-  const axiosSecure = useAxiosSecure();
+    const axiosSecure = useAxiosSecure();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch from backend
-        const { data } = await axiosSecure.get('/tests/test-list');
-        
-        // Transform flat list to nested structure (Department -> Category -> List)
-        // This maintains compatibility with AssignTest.jsx and PatientEntry.jsx
-        if (Array.isArray(data)) {
-           const structuredData = {};
-           data.forEach(test => {
-              // Ensure test_id exists (use _id if test_id missing)
-              const t = { ...test, test_id: test.test_id || test._id || test.code };
-              
-              // Normalize keys
-              const dept = (t.department || 'General').toLowerCase().replace(/\s+/g, '_');
-              const cat = (t.category || 'General').toLowerCase().replace(/\s+/g, '_');
+    const { data: testData = {}, isPending: loading } = useQuery({
+        queryKey: ["test-list"],
+        // Test catalogue changes infrequently — cache for 10 minutes
+        staleTime: 10 * 60 * 1000,
+        queryFn: async () => {
+            const { data } = await axiosSecure.get("/tests/test-list");
 
-              if (!structuredData[dept]) structuredData[dept] = {};
-              if (!structuredData[dept][cat]) structuredData[dept][cat] = [];
-              
-              structuredData[dept][cat].push(t);
-           });
-           setTestData(structuredData);
-        } else {
-           // Fallback if backend returns object or other format
-           setTestData(data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch tests from backend:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+            if (!Array.isArray(data)) return data ?? {};
 
-    fetchData();
-  }, [axiosSecure]);
+            // Transform flat list → nested { department → category → [...tests] }
+            const structured = {};
+            data.forEach((test) => {
+                const t = {
+                    ...test,
+                    test_id: test.test_id || test._id || test.code,
+                };
+                const dept = (t.department || "General")
+                    .toLowerCase()
+                    .replace(/\s+/g, "_");
+                const cat = (t.category || "General")
+                    .toLowerCase()
+                    .replace(/\s+/g, "_");
 
-  return { testData, loading };
+                if (!structured[dept]) structured[dept] = {};
+                if (!structured[dept][cat]) structured[dept][cat] = [];
+                structured[dept][cat].push(t);
+            });
+            return structured;
+        },
+    });
+
+    return { testData, loading };
 };
 
 export default useTests;
